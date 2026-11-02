@@ -94,8 +94,9 @@ video.anim{display:block;width:100%;max-height:60vh;object-fit:contain;border-ra
     </ul>
     <h2>Encaixe na semana</h2>
     <ul>
-      <li><b>Quarta:</b> faça o treino B depois da natação, ou ao menos 6 horas antes dela.</li>
-      <li><b>Esta semana:</b> comece na terça, 03/11, com carga leve, porque o teste de 3 km foi na véspera.</li>
+      <li><b>Agenda:</b> todo domingo as datas dos botões acima são atualizadas conforme a planilha do treinador no Treinus.</li>
+      <li><b>Natação:</b> faça o treino B depois dela, ou ao menos 6 horas antes.</li>
+      <li><b>Esta semana:</b> comece na terça, 03/11, com carga leve, porque o teste de 3 km foi na véspera. A Base 1 fica de fora e começa na próxima segunda.</li>
       <li><b>Material:</b> halteres ou kettlebell, banco ou degrau, elástico com alça e mini band.</li>
       <li><b>Treinador:</b> avise que a semana ganhou três sessões, para ele contar essa carga na planilha.</li>
     </ul>
@@ -161,10 +162,18 @@ const SESSOES = {
   ]}
 };
 
+// AGENDA-INICIO: atualizada todo domingo a partir da planilha do Treinus. Datas em AAAA-MM-DD e sessões a, b, c, d, e, f.
+const AGENDA = {'2026-11-03': 'a', '2026-11-04': 'b', '2026-11-05': 'e', '2026-11-06': 'c', '2026-11-07': 'f'};
+// AGENDA-FIM
+const diaAgenda = k => Object.keys(AGENDA).sort().filter(d => AGENDA[d] === k);
+const rotulo = d => { const [a, m, n] = d.split('-').map(Number); return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date(a, m - 1, n).getDay()] + ` ${String(n).padStart(2, '0')}/${String(m).padStart(2, '0')}`; };
+const quando = (k, s) => { const d = diaAgenda(k); return Object.keys(AGENDA).length ? (d.length ? d.map(rotulo).join(', ') : 'Fora nesta semana') : s.dia; };
+const dataHoje = () => { const h = new Date(); return `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`; };
+
 const $ = id => document.getElementById(id);
 const ler = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
-const hoje = {1: 'd', 2: 'a', 3: 'b', 4: 'e', 5: 'c', 6: 'f'}[new Date().getDay()];
+const hoje = AGENDA[dataHoje()] || (Object.keys(AGENDA).length ? null : {1: 'd', 2: 'a', 3: 'b', 4: 'e', 5: 'c', 6: 'f'}[new Date().getDay()]);
 const inicial = SESSOES[location.hash.slice(1)] ? location.hash.slice(1) : hoje || 'a';
 
 let sessao = inicial, series = Number(ler('meuz-series', '2'));
@@ -312,7 +321,7 @@ function desenhar() {
 
   pl.classList.toggle('rest', !!atual && atual.k === 'rest');
   if (!atual) {
-    pl.innerHTML = `<span class="tag">${s.nome} · ${s.dia}</span><h2>${s.foco}</h2>
+    pl.innerHTML = `<span class="tag">${s.nome} · ${quando(sessao, s)}</span><h2>${s.foco}</h2>
       <p>Comece com ${(s.aq || 240) / 60} minutos de aquecimento. Depois, o descanso entre as séries roda sozinho e toca um aviso.</p>
       <div class="controls"><button class="main" id="main" type="button">Começar treino</button></div>`;
     $('main').onclick = () => { iniciarRecursos(); passos = montar(); ir(0); };
@@ -361,7 +370,7 @@ function desenhar() {
 function encerrar() { parar(); passos = []; idx = -1; desenhar(); }
 
 $('tabs').innerHTML = Object.entries(SESSOES).map(([k, s]) =>
-  `<button type="button" data-s="${k}"><b>${s.nome}</b><span>${s.dia}</span></button>`).join('');
+  `<button type="button" data-s="${k}"><b>${s.nome}</b><span>${quando(k, s)}</span></button>`).join('');
 $('tabs').onclick = ev => {
   const b = ev.target.closest('button');
   if (b) { sessao = b.dataset.s; encerrar(); }

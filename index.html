@@ -1,5 +1,4 @@
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="referrer" content="strict-origin-when-cross-origin"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>body{margin:0}[hidden]{display:none!important}</style>
 <title>Força Triathlon MEUZ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
@@ -60,8 +59,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--work);outline-offse
 .notes{display:grid;gap:12px;background:var(--soft);border-radius:10px;padding:16px}
 .notes ul{margin:0;padding-left:18px;display:grid;gap:5px}
 .src{font-size:.86rem;color:var(--muted)}
-.video{aspect-ratio:16/9;width:100%;max-width:100%;border-radius:8px;overflow:hidden;background:#000}
-.video iframe{display:block;width:100%;height:100%;border:0}
+canvas.anim{display:block;aspect-ratio:16/9;width:100%;max-width:100%;border-radius:8px;background:var(--surface)}
+.list li.tem{grid-template-columns:32px minmax(0,1fr) clamp(96px,28%,170px)}
+.list canvas.anim{background:var(--bg)}
 </style></head><body>
 <main class="wrap">
   <header>
@@ -81,7 +81,6 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--work);outline-offse
       <button id="s3" type="button">3</button>
     </div>
   </div>
-  <p><a id="fila" target="_blank" rel="noopener">Abrir todos os vídeos em sequência no YouTube</a></p>
   <ol class="list" id="list"></ol>
 
   <section class="notes">
@@ -108,30 +107,30 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--work);outline-offse
 const AQUECIMENTO = 'Polichinelo ou trote parado, agachamento livre, ponte de glúteo e círculos de ombro.';
 const SESSOES = {
   a: {nome: 'Treino A', dia: 'Terça', foco: 'Pernas e core', ex: [
-    {n: 'Agachamento goblet', reps: 8, rest: 90, id: 'ge1vdJRP0UA', t: 6, cue: 'Peso junto ao peito, joelhos seguindo os pés. Desça em 3 segundos.'},
-    {n: 'Levantamento terra romeno', reps: 8, rest: 90, id: 'jSomWOwLiGE', t: 0, cue: 'Quadril para trás, coluna neutra, halteres perto das pernas.'},
-    {n: 'Agachamento búlgaro', reps: 8, lado: true, rest: 75, id: 'IL4ebT8L1aQ', t: 18, cue: 'Pé de trás no banco. Tronco firme e joelho estável.'},
-    {n: 'Panturrilha unilateral no degrau', reps: 12, lado: true, rest: 45, id: 'Xb-nuSxLVSY', t: 20, cue: 'Suba em 1 segundo e desça em 3. Protege o tendão na corrida.'},
-    {n: 'Prancha frontal', seg: 35, rest: 30, id: 'qNRqGqESAWU', t: 15, cue: 'Glúteo contraído, quadril alinhado, sem prender a respiração.'},
-    {n: 'Dead bug', reps: 8, lado: true, rest: 30, id: 'o4GKiEoYClI', t: 0, cue: 'Lombar colada no chão enquanto braço e perna opostos descem.'}
+    {n: 'Agachamento goblet', reps: 8, rest: 90, cue: 'Peso junto ao peito, joelhos seguindo os pés. Desça em 3 segundos.'},
+    {n: 'Levantamento terra romeno', reps: 8, rest: 90, cue: 'Quadril para trás, coluna neutra, halteres perto das pernas.'},
+    {n: 'Agachamento búlgaro', reps: 8, lado: true, rest: 75, cue: 'Pé de trás no banco. Tronco firme e joelho estável.'},
+    {n: 'Panturrilha unilateral no degrau', reps: 12, lado: true, rest: 45, cue: 'Suba em 1 segundo e desça em 3. Protege o tendão na corrida.'},
+    {n: 'Prancha frontal', seg: 35, rest: 30, cue: 'Glúteo contraído, quadril alinhado, sem prender a respiração.'},
+    {n: 'Dead bug', reps: 8, lado: true, rest: 30, cue: 'Lombar colada no chão enquanto braço e perna opostos descem.'}
   ]},
   b: {nome: 'Treino B', dia: 'Quarta', foco: 'Superior e core', ex: [
-    {n: 'Remada unilateral com halter', reps: 10, lado: true, rest: 75, id: 'E008-XIJBEk', t: 0, cue: 'Puxe o cotovelo em direção ao quadril, sem girar o tronco.'},
-    {n: 'Flexão de braço', reps: 10, rest: 75, id: 'dHgoYiCraCw', t: 5, cue: 'Corpo em linha reta. Se necessário, apoie os joelhos.'},
-    {n: 'Pulldown com elástico', reps: 12, rest: 60, id: 'aXwWVpzJyLU', t: 0, cue: 'Braços quase estendidos, trazendo as mãos até a coxa, como na puxada do nado.'},
-    {n: 'Desenvolvimento com halteres', reps: 8, rest: 75, id: 'eufDL9MmF8A', t: 0, cue: 'Abdômen firme, sem arquear a lombar. Use carga moderada.'},
-    {n: 'Face pull com elástico', reps: 15, rest: 45, id: 'GjfwIHrfgSw', t: 3, cue: 'Puxe em direção ao rosto, com os cotovelos altos.'},
-    {n: 'Rotação externa com elástico', reps: 12, lado: true, rest: 30, id: 'INKWa8D0Gp4', t: 5, cue: 'Cotovelo colado ao corpo. Movimento lento, para proteger o ombro.'},
-    {n: 'Pallof press', reps: 10, lado: true, rest: 45, id: 'G84ceO6XX9w', t: 0, cue: 'Elástico ou polia na lateral. Estenda os braços sem deixar o tronco girar.'}
+    {n: 'Remada unilateral com halter', reps: 10, lado: true, rest: 75, cue: 'Puxe o cotovelo em direção ao quadril, sem girar o tronco.'},
+    {n: 'Flexão de braço', reps: 10, rest: 75, cue: 'Corpo em linha reta. Se necessário, apoie os joelhos.'},
+    {n: 'Pulldown com elástico', reps: 12, rest: 60, cue: 'Braços quase estendidos, trazendo as mãos até a coxa, como na puxada do nado.'},
+    {n: 'Desenvolvimento com halteres', reps: 8, rest: 75, cue: 'Abdômen firme, sem arquear a lombar. Use carga moderada.'},
+    {n: 'Face pull com elástico', reps: 15, rest: 45, cue: 'Puxe em direção ao rosto, com os cotovelos altos.'},
+    {n: 'Rotação externa com elástico', reps: 12, lado: true, rest: 30, cue: 'Cotovelo colado ao corpo. Movimento lento, para proteger o ombro.'},
+    {n: 'Pallof press', reps: 10, lado: true, rest: 45, cue: 'Elástico ou polia na lateral. Estenda os braços sem deixar o tronco girar.'}
   ]},
   c: {nome: 'Treino C', dia: 'Sexta', foco: 'Estabilidade e core', ex: [
-    {n: 'Elevação pélvica unilateral', reps: 10, lado: true, rest: 45, id: '4AeXJJRhkMw', t: 14, cue: 'Suba empurrando o calcanhar, com o quadril nivelado.'},
-    {n: 'Step-down', reps: 8, lado: true, rest: 45, id: '66crATZ3SLQ', t: 0, cue: 'Degrau baixo. Desça em 3 segundos, com o joelho alinhado ao pé.'},
-    {n: 'Passada lateral com mini band', reps: 12, lado: true, rest: 30, id: 'g65F7ISjX5I', t: 0, cue: 'Joelhos levemente flexionados, sem deixar a banda afrouxar.'},
-    {n: 'Prancha Copenhagen adaptada', seg: 20, lado: true, rest: 30, id: 'yj7VyP_YOdk', t: 0, cue: 'Versão com apoio da perna de baixo. Foco na parte interna da coxa.'},
-    {n: 'Perdigueiro', reps: 8, lado: true, rest: 30, id: 'CTkmKnC7PDc', t: 0, cue: 'Coluna neutra e mão de apoio empurrando o chão.'},
-    {n: 'Prancha lateral', seg: 30, lado: true, rest: 30, id: '2NjO5KrlVEM', t: 6, cue: 'Cotovelo sob o ombro e quadril alto.'},
-    {n: 'Caminhada do fazendeiro', seg: 40, rest: 60, id: 'ooY6pF0H1BA', t: 0, cue: 'Halteres pesados, tronco ereto e passos curtos.'}
+    {n: 'Elevação pélvica unilateral', reps: 10, lado: true, rest: 45, cue: 'Suba empurrando o calcanhar, com o quadril nivelado.'},
+    {n: 'Step-down', reps: 8, lado: true, rest: 45, cue: 'Degrau baixo. Desça em 3 segundos, com o joelho alinhado ao pé.'},
+    {n: 'Passada lateral com mini band', reps: 12, lado: true, rest: 30, cue: 'Joelhos levemente flexionados, sem deixar a banda afrouxar.'},
+    {n: 'Prancha Copenhagen adaptada', seg: 20, lado: true, rest: 30, cue: 'Versão com apoio da perna de baixo. Foco na parte interna da coxa.'},
+    {n: 'Perdigueiro', reps: 8, lado: true, rest: 30, cue: 'Coluna neutra e mão de apoio empurrando o chão.'},
+    {n: 'Prancha lateral', seg: 30, lado: true, rest: 30, cue: 'Cotovelo sob o ombro e quadril alto.'},
+    {n: 'Caminhada do fazendeiro', seg: 40, rest: 60, cue: 'Halteres pesados, tronco ereto e passos curtos.'}
   ]}
 };
 
@@ -145,11 +144,149 @@ let sessao = inicial, series = Number(ler('meuz-series', '2'));
 let passos = [], idx = -1, fim = 0, restante = null, ultimoBip = null, audio = null, trava = null, relogio = null;
 
 const dose = e => (e.seg ? e.seg + ' s' : e.reps + ' reps') + (e.lado ? ' por lado' : '');
-const link = e => `https://www.youtube.com/watch?v=${e.id}${e.t ? `&t=${e.t}s` : ''}`;
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-// Fora do visualizador de artifacts o YouTube pode ser incorporado, e o vídeo aparece no próprio treino.
-const EMBED = window.self === window.top;
-const video = e => EMBED ? `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?start=${e.t}&autoplay=1&mute=1&playsinline=1&rel=0&loop=1&playlist=${e.id}" title="Demonstração: ${e.n}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>` : '';
+const quadro = e => `<canvas class="anim" data-ex="${e.n}" role="img" aria-label="Animação: ${e.n}"></canvas>`;
+
+// Animações próprias: cada pose define quadril, tronco, mãos e pés; cotovelos e joelhos saem de cinemática inversa.
+const L = {tronco: 46, coxa: 36, canela: 36, braco: 25, ante: 24};
+const ciclo = (a, b, ida, volta, pausa = .3) => [[a, pausa], [a, ida], [b, pausa], [b, volta]];
+const ANIM = {
+  'Agachamento goblet': {peso: 'f', base: {ff: [160, 153], fb: [152, 153]}, q: ciclo(
+    {h: [150, 82], lean: 2, hf: [168, 54], hb: [166, 54]}, {h: [132, 124], lean: 28, hf: [172, 100], hb: [170, 100]}, 2.6, 1)},
+  'Levantamento terra romeno': {peso: 'fb', base: {ff: [158, 153], fb: [150, 153]}, q: ciclo(
+    {h: [150, 83], lean: 3, hf: [156, 86], hb: [154, 86]}, {h: [130, 92], lean: 65, hf: [168, 120], hb: [166, 120]}, 2.4, 1.2)},
+  'Agachamento búlgaro': {peso: 'fb', banco: [60, 120, 48, 38], base: {ff: [172, 153], fb: [100, 114], ftb: 180}, q: ciclo(
+    {h: [150, 86], lean: 5, hf: [158, 88], hb: [156, 88]}, {h: [134, 118], lean: 14, hf: [149, 121], hb: [147, 121]}, 2.2, 1.2)},
+  'Panturrilha unilateral no degrau': {zoom: .82, banco: [160, 146, 44, 12], parede: 214, q: ciclo(
+    {h: [160, 67], lean: 0, ff: [160, 137.6], ftf: 40, fb: [140, 112], ftb: 70, hf: [204, 38], hb: [160, 64]},
+    {h: [157, 78], lean: 0, ff: [157.4, 149.4], ftf: -15, fb: [138, 124], ftb: 70, hf: [204, 48], hb: [158, 76]}, 3, 1)},
+  'Prancha frontal': {base: {lean: 81, ff: [84, 146], fb: [84, 146], ftf: 63, ftb: 63, hf: [222, 154], hb: [222, 154], ef: [200, 154], eb: [200, 154]},
+    q: [[{h: [155, 135]}, 1.4], [{h: [155, 134]}, 1.4]]},
+  'Dead bug': (() => {
+    const b = {h: [130, 150], lean: 90, ff: [94, 114], fb: [94, 114], ftf: -120, ftb: -120, hf: [176, 101], hb: [176, 101]};
+    return {ks: 1, base: b, q: [[{}, .3], [{ff: [60, 146], hb: [224, 146], ftf: -150}, .3], [{ff: [60, 146], hb: [224, 146], ftf: -150}, 1.3], [{}, .3], [{}, 1.3],
+      [{fb: [60, 146], hf: [224, 146], ftb: -150}, .3], [{fb: [60, 146], hf: [224, 146], ftb: -150}, 1.3], [{}, 1.3]].map(([p, d], i, l) => [p, i === 0 ? 1.3 : d])};
+  })(),
+  'Remada unilateral com halter': {peso: 'f', banco: [190, 128, 90, 30], base: {h: [130, 100], lean: 80, ff: [150, 153], fb: [105, 153], hb: [196, 125]}, q: ciclo(
+    {hf: [172, 140]}, {hf: [150, 112]}, 1, 1.6)},
+  'Flexão de braço': {base: {ff: [90, 146], fb: [90, 146], ftf: 63, ftb: 63, hf: [204, 153], hb: [204, 153]}, q: ciclo(
+    {h: [157, 120], lean: 69}, {h: [162, 141], lean: 86}, 1.6, 1)},
+  'Pulldown com elástico': {elastico: [262, 30], base: {h: [140, 84], lean: 30, ff: [150, 153], fb: [130, 153]}, q: ciclo(
+    {hf: [204, 26], hb: [202, 28]}, {hf: [152, 88], hb: [150, 88]}, 1, 1.6)},
+  'Desenvolvimento com halteres': {zoom: .82, frente: true, sw: 16, hw: 8, peso: 'fb', es: [1, -1], ks: [-1, 1], base: {h: [160, 84], lean: 0, ff: [176, 153], fb: [144, 153], ftb: 180}, q: ciclo(
+    {hf: [196, 16], hb: [124, 16]}, {hf: [180, -8], hb: [140, -8]}, 1, 1.6)},
+  'Face pull com elástico': {elastico: [262, 44], es: -1, base: {h: [145, 84], lean: 0, ff: [158, 153], fb: [135, 153]}, q: ciclo(
+    {hf: [190, 42], hb: [188, 44]}, {hf: [158, 26], hb: [156, 28]}, 1, 1.6)},
+  'Rotação externa com elástico': {frente: true, sw: 16, hw: 8, ks: [-1, 1], es: [1, -1], elastico: [60, 66], so: 'f', base: {h: [160, 84], lean: 0, ff: [176, 153], fb: [144, 153], ftb: 180, ef: [178, 62], hb: [140, 86]}, q: ciclo(
+    {hf: [166, 66]}, {hf: [202, 66]}, 1, 1.6)},
+  'Pallof press': {rotulo: 'elástico vem da lateral', elastico: [120, 176], base: {h: [150, 84], lean: 0, ff: [168, 153], fb: [136, 153]}, q: ciclo(
+    {hf: [170, 62], hb: [168, 64]}, {hf: [198, 60], hb: [196, 62]}, 1, 1.6)},
+  'Elevação pélvica unilateral': {ks: [1, 1], base: {ff: [108, 153], ftf: 180, ftb: -100, hl: 90, hf: [150, 154], hb: [150, 154]}, q: ciclo(
+    {h: [140, 148], lean: 92, fb: [60, 118]}, {h: [150, 122], lean: 128, fb: [84, 92]}, 1, 1.6)},
+  'Step-down': {zoom: .8, banco: [120, 134, 70, 24], base: {ff: [150, 129], ftb: 20}, q: ciclo(
+    {h: [150, 58], lean: 3, fb: [176, 120], hf: [172, 62], hb: [170, 62]}, {h: [140, 92], lean: 22, fb: [178, 148], hf: [188, 90], hb: [186, 90]}, 2.6, 1)},
+  'Passada lateral com mini band': (() => {
+    const p = (x, f, b) => ({h: [x, 92], lean: 0, ff: [f, 153], fb: [b, 153], hf: [x + 22, 94], hb: [x - 22, 94]});
+    const ida = [p(126, 142, 110), p(141, 172, 110), p(156, 172, 140), p(171, 204, 140), p(186, 204, 172)];
+    return {frente: true, sw: 16, hw: 8, ks: [-1, 1], es: [1, -1], banda: true, base: {ftb: 180},
+      q: [...ida, ...ida.slice(1, -1).reverse()].map(f => [f, .55])};
+  })(),
+  'Prancha Copenhagen adaptada': {banco: [70, 124, 48, 34], ks: [-1, -1], base: {ff: [104, 118], fb: [128, 153], ftf: 170, ftb: 170, hl: 80, hf: [236, 154], hb: [236, 154], ef: [214, 154], eb: [214, 154]}, q: ciclo(
+    {h: [170, 146], lean: 65}, {h: [168, 118], lean: 82}, 1.2, 1.2, 1.4)},
+  'Perdigueiro': (() => {
+    const b = {h: [118, 104], lean: 90, ff: [82, 150], fb: [82, 150], ftf: 180, ftb: 180, hf: [164, 153], hb: [164, 153]};
+    const x = {ff: [48, 100], hb: [213, 100]}, y = {fb: [48, 100], hf: [213, 100]};
+    return {ks: -1, base: b, q: [[{}, 1], [x, .5], [x, 1], [{}, 1], [y, .5], [y, 1]]};
+  })(),
+  'Prancha lateral': {ks: 1, base: {ff: [76, 148], fb: [76, 148], ftf: 20, ftb: 20, hf: [214, 154], ef: [188, 154], hb: [186, 62]}, q: ciclo(
+    {h: [140, 146], lean: 78}, {h: [143, 121], lean: 68}, 1.2, 1.2, 1.8)},
+  'Caminhada do fazendeiro': {peso: 'fb', base: {lean: 0, hf: [162, 90], hb: [158, 90]}, q: [
+    [{h: [160, 86], ff: [184, 153], fb: [136, 153], ftb: 25}, .4], [{h: [160, 83], ff: [160, 153], fb: [152, 128], ftb: 50}, .4],
+    [{h: [160, 86], fb: [184, 153], ff: [136, 153], ftf: 25}, .4], [{h: [160, 83], fb: [160, 153], ff: [152, 128], ftf: 50}, .4]]}
+};
+for (const a of Object.values(ANIM)) {
+  a.f = a.q.map(([p, d]) => [{ftf: 0, ftb: 0, ...a.base, ...p}, d]);
+  a.dur = a.f.reduce((t, x) => t + x[1], 0);
+}
+
+const rad = g => g * Math.PI / 180;
+const mistura = (x, y, k) => Array.isArray(x) ? x.map((v, i) => mistura(v, y[i], k)) : x + (y - x) * k;
+function poseEm(a, t) {
+  let u = t % a.dur, i = 0;
+  while (u > a.f[i][1]) u -= a.f[i++][1];
+  const [p, d] = a.f[i], q = a.f[(i + 1) % a.f.length][0], k = d ? u / d : 0, e = k * k * (3 - 2 * k), r = {};
+  for (const c in p) r[c] = c in q ? mistura(p[c], q[c], e) : p[c];
+  return r;
+}
+function junta(a, b, l1, l2, s) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.min(Math.hypot(dx, dy) || 1, l1 + l2 - .01);
+  const n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n, m = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - m * m));
+  return [[a[0] + ux * m - s * uy * h, a[1] + uy * m + s * ux * h], [a[0] + ux * d, a[1] + uy * d]];
+}
+const par = v => Array.isArray(v) ? v : [v, v];
+function desenharAnim(cv, a, t) {
+  const w = cv.width, x = cv.getContext('2d'), css = getComputedStyle(document.documentElement);
+  const cor = n => css.getPropertyValue(n).trim(), tinta = cor('--ink'), fundo = cor('--muted'), acento = cor('--work'), faixa = cor('--rest');
+  const p = poseEm(a, t), linha = (c, l, ...pts) => {
+    x.strokeStyle = c; x.lineWidth = l; x.beginPath();
+    pts.forEach((v, i) => i ? x.lineTo(v[0], v[1]) : x.moveTo(v[0], v[1]));
+    x.stroke();
+  };
+  x.setTransform(w / 320, 0, 0, w / 320, 0, 0);
+  x.clearRect(0, 0, 320, 180);
+  x.lineCap = x.lineJoin = 'round';
+  linha(fundo, 2, [12, 158], [308, 158]);
+  x.translate(160, 158); x.scale(a.zoom || 1, a.zoom || 1); x.translate(-160, -158);
+  x.fillStyle = acento;
+  if (a.banco) x.fillRect(...a.banco);
+  if (a.parede) x.fillRect(a.parede, 0, 6, 158);
+  const sn = Math.sin(rad(p.lean)), cs = Math.cos(rad(p.lean)), S = [p.h[0] + L.tronco * sn, p.h[1] - L.tronco * cs];
+  const hl = rad(p.hl ?? p.lean), C = [S[0] + 15 * Math.sin(hl), S[1] - 15 * Math.cos(hl)];
+  const sw = a.sw || 0, hw = a.hw || 0, [kf, kb] = par(a.ks ?? -1), [ef, eb] = par(a.es ?? 1), pe = a.frente ? 9 : 13;
+  const perna = (q, alvo, s, g, c, l) => {
+    const [j, e] = junta(q, alvo, L.coxa, L.canela, s);
+    linha(c, l, q, j, e, [e[0] + pe * Math.cos(rad(g)), e[1] + pe * Math.sin(rad(g))]);
+    return e;
+  };
+  const braco = (o, alvo, s, fixo, c, l) => {
+    const [j, e] = fixo ? [fixo, alvo] : junta(o, alvo, L.braco, L.ante, s);
+    linha(c, l, o, j, e);
+    return e;
+  };
+  const hB = braco([S[0] - sw, S[1]], p.hb, eb, p.eb, fundo, 6);
+  const tB = perna([p.h[0] - hw, p.h[1]], p.fb, kb, p.ftb, fundo, 7);
+  linha(tinta, 11, [p.h[0] - hw, p.h[1]], [p.h[0] + hw, p.h[1]], [S[0] + sw, S[1]], [S[0] - sw, S[1]], [p.h[0] - hw, p.h[1]]);
+  x.fillStyle = tinta; x.beginPath(); x.arc(C[0], C[1], 9, 0, 7); x.fill();
+  const tF = perna([p.h[0] + hw, p.h[1]], p.ff, kf, p.ftf, tinta, 7);
+  const hF = braco([S[0] + sw, S[1]], p.hf, ef, p.ef, tinta, 6);
+  if (a.banda) linha(faixa, 3, tF, tB);
+  if (a.elastico) {
+    linha(faixa, 2.5, a.elastico, hF);
+    if (a.so !== 'f') linha(faixa, 2.5, a.elastico, hB);
+    x.fillStyle = faixa; x.beginPath(); x.arc(a.elastico[0], a.elastico[1], 4, 0, 7); x.fill();
+  }
+  for (const m of a.peso || '') {
+    const h = m === 'f' ? hF : hB;
+    linha(acento, 3, [h[0] - 8, h[1]], [h[0] + 8, h[1]]);
+    linha(acento, 7, [h[0] - 8, h[1] - 4], [h[0] - 8, h[1] + 4]);
+    linha(acento, 7, [h[0] + 8, h[1] - 4], [h[0] + 8, h[1] + 4]);
+  }
+  if (a.rotulo) {
+    x.setTransform(w / 320, 0, 0, w / 320, 0, 0);
+    x.fillStyle = fundo; x.font = '12px Barlow, Arial, sans-serif'; x.fillText(a.rotulo, 14, 22);
+  }
+}
+const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animar(ms) {
+  document.querySelectorAll('canvas.anim').forEach(cv => {
+    const a = ANIM[cv.dataset.ex], w = Math.round(cv.clientWidth * Math.min(devicePixelRatio || 1, 2));
+    if (!a || !w) return;
+    if (cv.width !== w) { cv.width = w; cv.height = Math.round(w * 9 / 16); }
+    desenharAnim(cv, a, parado ? a.f[0][1] + a.f[1][1] + .01 : ms / 1000);
+  });
+  requestAnimationFrame(animar);
+}
 
 function montar() {
   const s = SESSOES[sessao], lista = [{k: 'warm', dur: 240}];
@@ -247,15 +384,13 @@ function desenhar() {
   $('s3').setAttribute('aria-pressed', series === 3);
   const base = passos.length ? passos : montar();
   $('sum').textContent = `${s.foco}: cerca de ${minutos(base)} min`;
-  $('fila').href = `https://www.youtube.com/watch_videos?video_ids=${s.ex.map(e => e.id).join(',')}`;
   const atual = passos[idx];
   const ativo = atual && atual.k !== 'warm' && atual.k !== 'done' ? atual.i : -1;
-  $('list').innerHTML = s.ex.map((e, i) => `<li class="${i === ativo ? 'now' : i < ativo || (atual && atual.k === 'done') ? 'past' : ''}">
+  $('list').innerHTML = s.ex.map((e, i) => `<li class="tem ${i === ativo ? 'now' : i < ativo || (atual && atual.k === 'done') ? 'past' : ''}">
     <span class="n">${i + 1}</span>
     <div><h3>${e.n}</h3>
     <p class="dose">${series} × ${dose(e)} · descanso ${e.rest} s</p>
-    <p class="cue">${e.cue}</p>
-    <a href="${link(e)}" target="_blank" rel="noopener">Ver o trecho${e.t ? ` em ${mmss(e.t)}` : ''}</a></div></li>`).join('');
+    <p class="cue">${e.cue}</p></div>${quadro(e)}</li>`).join('');
 
   pl.classList.toggle('rest', !!atual && atual.k === 'rest');
   if (!atual) {
@@ -272,7 +407,7 @@ function desenhar() {
     if (!correndo) $('main').onclick = () => { cronometrar(atual.dur); desenhar(); };
   } else if (atual.k === 'work') {
     const e = atual.e, t = `<span class="tag">Exercício ${atual.i + 1} de ${s.ex.length} · série ${atual.n} de ${series}</span><h2>${e.n}</h2>`;
-    const dica = `${video(e)}<p>${e.cue}</p><p><a href="${link(e)}" target="_blank" rel="noopener">Ver o trecho no YouTube</a></p>`;
+    const dica = `${quadro(e)}<p>${e.cue}</p>`;
     if (e.seg) {
       const correndo = relogio || restante !== null;
       pl.innerHTML = `${t}${atual.lado ? `<p class="reps">${atual.lado}</p>` : ''}<p id="prep" ${correndo ? '' : 'hidden'}>Posicione-se: o tempo começa em 5 segundos.</p>
@@ -284,7 +419,7 @@ function desenhar() {
     }
   } else if (atual.k === 'rest') {
     const titulo = atual.troca ? 'Troque de lado' : `Próximo: ${atual.prox.n}`;
-    const prox = atual.troca ? '' : `<p>${atual.prox === atual.e ? `Série ${atual.n + 1} de ${series}` : `Primeira série · ${dose(atual.prox)}`}</p>${atual.prox === atual.e ? '' : video(atual.prox)}`;
+    const prox = atual.troca ? '' : `<p>${atual.prox === atual.e ? `Série ${atual.n + 1} de ${series}` : `Primeira série · ${dose(atual.prox)}`}</p>${atual.prox === atual.e ? '' : quadro(atual.prox)}`;
     pl.innerHTML = `<span class="tag">Descanso</span><h2>${titulo}</h2><div class="clock">${mmss(restante !== null ? restante : faltam())}</div>${prox}${botoes('')}`;
   } else {
     pl.innerHTML = `<span class="tag">Treino concluído</span><h2>${s.nome} cumprido!</h2>
@@ -315,6 +450,7 @@ $('tabs').onclick = ev => {
 };
 [2, 3].forEach(n => { $('s' + n).onclick = () => { series = n; guardar('meuz-series', String(n)); encerrar(); }; });
 desenhar();
+requestAnimationFrame(animar);
 </script>
 
 </body></html>

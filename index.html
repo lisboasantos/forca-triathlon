@@ -96,7 +96,7 @@ video.anim{display:block;width:100%;max-height:60vh;object-fit:contain;border-ra
     <ul>
       <li><b>Agenda:</b> todo domingo as datas dos botões acima são atualizadas conforme a planilha do treinador no Treinus.</li>
       <li><b>Natação:</b> faça o treino B depois dela, ou ao menos 6 horas antes.</li>
-      <li><b>Esta semana:</b> comece na terça, 03/11, com carga leve, porque o teste de 3 km foi na véspera. A Base 1 fica de fora e começa na próxima segunda.</li>
+      <li><b>Esta semana:</b> comece na terça, 03/11, com carga leve, porque o teste de 3 km foi na véspera. A Base 1 e a Base 2 ficam de fora, porque outubro teve a menor carga do ano e a volta precisa ser gradual.</li>
       <li><b>Material:</b> halteres ou kettlebell, banco ou degrau, elástico com alça e mini band.</li>
       <li><b>Treinador:</b> avise que a semana ganhou três sessões, para ele contar essa carga na planilha.</li>
     </ul>
@@ -163,7 +163,7 @@ const SESSOES = {
 };
 
 // AGENDA-INICIO: atualizada todo domingo a partir da planilha do Treinus. Datas em AAAA-MM-DD e sessões a, b, c, d, e, f.
-const AGENDA = {'2026-11-03': 'a', '2026-11-04': 'b', '2026-11-05': 'e', '2026-11-06': 'c', '2026-11-07': 'f'};
+const AGENDA = {'2026-11-03': 'a', '2026-11-04': 'b', '2026-11-06': 'c', '2026-11-07': 'f'};
 // AGENDA-FIM
 const diaAgenda = k => Object.keys(AGENDA).sort().filter(d => AGENDA[d] === k);
 const rotulo = d => { const [a, m, n] = d.split('-').map(Number); return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date(a, m - 1, n).getDay()] + ` ${String(n).padStart(2, '0')}/${String(m).padStart(2, '0')}`; };

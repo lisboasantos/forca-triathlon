@@ -59,9 +59,9 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--work);outline-offse
 .notes{display:grid;gap:12px;background:var(--soft);border-radius:10px;padding:16px}
 .notes ul{margin:0;padding-left:18px;display:grid;gap:5px}
 .src{font-size:.86rem;color:var(--muted)}
-canvas.anim{display:block;aspect-ratio:16/9;width:100%;max-width:100%;border-radius:8px;background:var(--surface)}
+video.anim{display:block;width:100%;max-height:60vh;object-fit:contain;border-radius:8px;background:#000}
+.sem{color:var(--muted);font-size:.86rem}
 .list li.tem{grid-template-columns:32px minmax(0,1fr) clamp(96px,28%,170px)}
-.list canvas.anim{background:var(--bg)}
 </style></head><body>
 <main class="wrap">
   <header>
@@ -103,7 +103,6 @@ canvas.anim{display:block;aspect-ratio:16/9;width:100%;max-width:100%;border-rad
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const AQUECIMENTO = 'Polichinelo ou trote parado, agachamento livre, ponte de glúteo e círculos de ombro.';
 const SESSOES = {
@@ -146,140 +145,21 @@ let passos = [], idx = -1, fim = 0, restante = null, ultimoBip = null, audio = n
 
 const dose = e => (e.seg ? e.seg + ' s' : e.reps + ' reps') + (e.lado ? ' por lado' : '');
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-const quadro = e => `<canvas class="anim" data-ex="${e.n}" role="img" aria-label="Animação: ${e.n}"></canvas>`;
-
-// Animações próprias: cada pose define quadril, tronco, mãos e pés; cotovelos e joelhos saem de cinemática inversa.
-const L = {tronco: 46, coxa: 36, canela: 36, braco: 25, ante: 24};
-const ciclo = (a, b, ida, volta, pausa = .3) => [[a, pausa], [a, ida], [b, pausa], [b, volta]];
-const ANIM = {
-  'Agachamento goblet': {peso: 'f', base: {ff: [160, 153], fb: [152, 153]}, q: ciclo(
-    {h: [150, 82], lean: 2, hf: [168, 54], hb: [166, 54]}, {h: [132, 124], lean: 28, hf: [172, 100], hb: [170, 100]}, 2.6, 1)},
-  'Levantamento terra romeno': {peso: 'fb', base: {ff: [158, 153], fb: [150, 153]}, q: ciclo(
-    {h: [150, 83], lean: 3, hf: [156, 86], hb: [154, 86]}, {h: [130, 92], lean: 65, hf: [168, 120], hb: [166, 120]}, 2.4, 1.2)},
-  'Agachamento búlgaro': {peso: 'fb', banco: [60, 120, 48, 38], base: {ff: [172, 153], fb: [100, 114], ftb: 180}, q: ciclo(
-    {h: [150, 86], lean: 5, hf: [158, 88], hb: [156, 88]}, {h: [134, 118], lean: 14, hf: [149, 121], hb: [147, 121]}, 2.2, 1.2)},
-  'Panturrilha unilateral no degrau': {zoom: .82, banco: [160, 146, 44, 12], parede: 214, q: ciclo(
-    {h: [160, 67], lean: 0, ff: [160, 137.6], ftf: 40, fb: [140, 112], ftb: 70, hf: [204, 38], hb: [160, 64]},
-    {h: [157, 78], lean: 0, ff: [157.4, 149.4], ftf: -15, fb: [138, 124], ftb: 70, hf: [204, 48], hb: [158, 76]}, 3, 1)},
-  'Prancha frontal': {base: {lean: 81, ff: [84, 146], fb: [84, 146], ftf: 63, ftb: 63, hf: [222, 154], hb: [222, 154], ef: [200, 154], eb: [200, 154]},
-    q: [[{h: [155, 135]}, 1.4], [{h: [155, 134]}, 1.4]]},
-  'Dead bug': (() => {
-    const b = {h: [130, 150], lean: 90, ff: [94, 114], fb: [94, 114], ftf: -120, ftb: -120, hf: [176, 101], hb: [176, 101]};
-    return {ks: 1, base: b, q: [[{}, .3], [{ff: [60, 146], hb: [224, 146], ftf: -150}, .3], [{ff: [60, 146], hb: [224, 146], ftf: -150}, 1.3], [{}, .3], [{}, 1.3],
-      [{fb: [60, 146], hf: [224, 146], ftb: -150}, .3], [{fb: [60, 146], hf: [224, 146], ftb: -150}, 1.3], [{}, 1.3]].map(([p, d], i, l) => [p, i === 0 ? 1.3 : d])};
-  })(),
-  'Remada unilateral com halter': {peso: 'f', banco: [190, 128, 90, 30], base: {h: [130, 100], lean: 80, ff: [150, 153], fb: [105, 153], hb: [196, 125]}, q: ciclo(
-    {hf: [172, 140]}, {hf: [150, 112]}, 1, 1.6)},
-  'Flexão de braço': {base: {ff: [90, 146], fb: [90, 146], ftf: 63, ftb: 63, hf: [204, 153], hb: [204, 153]}, q: ciclo(
-    {h: [157, 120], lean: 69}, {h: [162, 141], lean: 86}, 1.6, 1)},
-  'Pulldown com elástico': {elastico: [262, 30], base: {h: [140, 84], lean: 30, ff: [150, 153], fb: [130, 153]}, q: ciclo(
-    {hf: [204, 26], hb: [202, 28]}, {hf: [152, 88], hb: [150, 88]}, 1, 1.6)},
-  'Desenvolvimento com halteres': {zoom: .82, frente: true, sw: 16, hw: 8, peso: 'fb', es: [1, -1], ks: [-1, 1], base: {h: [160, 84], lean: 0, ff: [176, 153], fb: [144, 153], ftb: 180}, q: ciclo(
-    {hf: [196, 16], hb: [124, 16]}, {hf: [180, -8], hb: [140, -8]}, 1, 1.6)},
-  'Face pull com elástico': {elastico: [262, 44], es: -1, base: {h: [145, 84], lean: 0, ff: [158, 153], fb: [135, 153]}, q: ciclo(
-    {hf: [190, 42], hb: [188, 44]}, {hf: [158, 26], hb: [156, 28]}, 1, 1.6)},
-  'Rotação externa com elástico': {frente: true, sw: 16, hw: 8, ks: [-1, 1], es: [1, -1], elastico: [60, 66], so: 'f', base: {h: [160, 84], lean: 0, ff: [176, 153], fb: [144, 153], ftb: 180, ef: [178, 62], hb: [140, 86]}, q: ciclo(
-    {hf: [166, 66]}, {hf: [202, 66]}, 1, 1.6)},
-  'Pallof press': {rotulo: 'elástico vem da lateral', elastico: [120, 176], base: {h: [150, 84], lean: 0, ff: [168, 153], fb: [136, 153]}, q: ciclo(
-    {hf: [170, 62], hb: [168, 64]}, {hf: [198, 60], hb: [196, 62]}, 1, 1.6)},
-  'Elevação pélvica unilateral': {ks: [1, 1], base: {ff: [108, 153], ftf: 180, ftb: -100, hl: 90, hf: [150, 154], hb: [150, 154]}, q: ciclo(
-    {h: [140, 148], lean: 92, fb: [60, 118]}, {h: [150, 122], lean: 128, fb: [84, 92]}, 1, 1.6)},
-  'Step-down': {zoom: .8, banco: [120, 134, 70, 24], base: {ff: [150, 129], ftb: 20}, q: ciclo(
-    {h: [150, 58], lean: 3, fb: [176, 120], hf: [172, 62], hb: [170, 62]}, {h: [140, 92], lean: 22, fb: [178, 148], hf: [188, 90], hb: [186, 90]}, 2.6, 1)},
-  'Passada lateral com mini band': (() => {
-    const p = (x, f, b) => ({h: [x, 92], lean: 0, ff: [f, 153], fb: [b, 153], hf: [x + 22, 94], hb: [x - 22, 94]});
-    const ida = [p(126, 142, 110), p(141, 172, 110), p(156, 172, 140), p(171, 204, 140), p(186, 204, 172)];
-    return {frente: true, sw: 16, hw: 8, ks: [-1, 1], es: [1, -1], banda: true, base: {ftb: 180},
-      q: [...ida, ...ida.slice(1, -1).reverse()].map(f => [f, .55])};
-  })(),
-  'Prancha Copenhagen adaptada': {banco: [70, 124, 48, 34], ks: [-1, -1], base: {ff: [104, 118], fb: [128, 153], ftf: 170, ftb: 170, hl: 80, hf: [236, 154], hb: [236, 154], ef: [214, 154], eb: [214, 154]}, q: ciclo(
-    {h: [170, 146], lean: 65}, {h: [168, 118], lean: 82}, 1.2, 1.2, 1.4)},
-  'Perdigueiro': (() => {
-    const b = {h: [118, 104], lean: 90, ff: [82, 150], fb: [82, 150], ftf: 180, ftb: 180, hf: [164, 153], hb: [164, 153]};
-    const x = {ff: [48, 100], hb: [213, 100]}, y = {fb: [48, 100], hf: [213, 100]};
-    return {ks: -1, base: b, q: [[{}, 1], [x, .5], [x, 1], [{}, 1], [y, .5], [y, 1]]};
-  })(),
-  'Prancha lateral': {ks: 1, base: {ff: [76, 148], fb: [76, 148], ftf: 20, ftb: 20, hf: [214, 154], ef: [188, 154], hb: [186, 62]}, q: ciclo(
-    {h: [140, 146], lean: 78}, {h: [143, 121], lean: 68}, 1.2, 1.2, 1.8)},
-  'Caminhada do fazendeiro': {peso: 'fb', base: {lean: 0, hf: [162, 90], hb: [158, 90]}, q: [
-    [{h: [160, 86], ff: [184, 153], fb: [136, 153], ftb: 25}, .4], [{h: [160, 83], ff: [160, 153], fb: [152, 128], ftb: 50}, .4],
-    [{h: [160, 86], fb: [184, 153], ff: [136, 153], ftf: 25}, .4], [{h: [160, 83], fb: [160, 153], ff: [152, 128], ftf: 50}, .4]]}
+const SEM_VIDEO = ['Dead bug', 'Elevação pélvica unilateral'];
+const AVISOS = {
+  'Panturrilha unilateral no degrau': 'O vídeo mostra a perna livre subindo. No treino, ela fica quieta e só o calcanhar da perna de apoio sobe e desce.',
+  'Rotação externa com elástico': 'O vídeo mostra o cotovelo alto. No treino, mantenha o cotovelo colado às costelas.',
+  'Remada unilateral com halter': 'A pose do vídeo está aberta demais. No treino, tronco inclinado, uma mão apoiada e o cotovelo puxado até o quadril.',
+  'Prancha Copenhagen adaptada': 'O apoio do vídeo é aproximado. Siga a descrição acima.'
 };
-for (const a of Object.values(ANIM)) {
-  a.f = a.q.map(([p, d]) => [{ftf: 0, ftb: 0, ...a.base, ...p}, d]);
-  a.dur = a.f.reduce((t, x) => t + x[1], 0);
-}
+const arquivo = e => e.n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-');
+// No treino o vídeo roda sozinho; na lista ele mostra um quadro e toca ao receber um toque.
+const quadro = (e, roda) => SEM_VIDEO.includes(e.n)
+  ? '<p class="sem">Vídeo em refação. Siga a descrição.</p>'
+  : `<video class="anim" src="videos/${arquivo(e)}.mp4#t=2.5" muted loop playsinline preload="metadata" ${roda ? 'autoplay' : ''} aria-label="Demonstração: ${e.n}"></video>`;
+const aviso = e => AVISOS[e.n] ? `<p class="cue"><b>Atenção:</b> ${AVISOS[e.n]}</p>` : '';
 
-const rad = g => g * Math.PI / 180;
-const mistura = (x, y, k) => Array.isArray(x) ? x.map((v, i) => mistura(v, y[i], k)) : x + (y - x) * k;
-function poseEm(a, t) {
-  let u = t % a.dur, i = 0;
-  while (u > a.f[i][1]) u -= a.f[i++][1];
-  const [p, d] = a.f[i], q = a.f[(i + 1) % a.f.length][0], k = d ? u / d : 0, e = k * k * (3 - 2 * k), r = {};
-  for (const c in p) r[c] = c in q ? mistura(p[c], q[c], e) : p[c];
-  return r;
-}
-function junta(a, b, l1, l2, s) {
-  const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.min(Math.hypot(dx, dy) || 1, l1 + l2 - .01);
-  const n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n, m = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
-  const h = Math.sqrt(Math.max(0, l1 * l1 - m * m));
-  return [[a[0] + ux * m - s * uy * h, a[1] + uy * m + s * ux * h], [a[0] + ux * d, a[1] + uy * d]];
-}
-const par = v => Array.isArray(v) ? v : [v, v];
-function desenharAnim(cv, a, t) {
-  const w = cv.width, x = cv.getContext('2d'), css = getComputedStyle(document.documentElement);
-  const cor = n => css.getPropertyValue(n).trim(), tinta = cor('--ink'), fundo = cor('--muted'), acento = cor('--work'), faixa = cor('--rest');
-  const p = poseEm(a, t), linha = (c, l, ...pts) => {
-    x.strokeStyle = c; x.lineWidth = l; x.beginPath();
-    pts.forEach((v, i) => i ? x.lineTo(v[0], v[1]) : x.moveTo(v[0], v[1]));
-    x.stroke();
-  };
-  x.setTransform(w / 320, 0, 0, w / 320, 0, 0);
-  x.clearRect(0, 0, 320, 180);
-  x.lineCap = x.lineJoin = 'round';
-  linha(fundo, 2, [12, 158], [308, 158]);
-  x.translate(160, 158); x.scale(a.zoom || 1, a.zoom || 1); x.translate(-160, -158);
-  x.fillStyle = acento;
-  if (a.banco) x.fillRect(...a.banco);
-  if (a.parede) x.fillRect(a.parede, 0, 6, 158);
-  const sn = Math.sin(rad(p.lean)), cs = Math.cos(rad(p.lean)), S = [p.h[0] + L.tronco * sn, p.h[1] - L.tronco * cs];
-  const hl = rad(p.hl ?? p.lean), C = [S[0] + 15 * Math.sin(hl), S[1] - 15 * Math.cos(hl)];
-  const sw = a.sw || 0, hw = a.hw || 0, [kf, kb] = par(a.ks ?? -1), [ef, eb] = par(a.es ?? 1), pe = a.frente ? 9 : 13;
-  const perna = (q, alvo, s, g, c, l) => {
-    const [j, e] = junta(q, alvo, L.coxa, L.canela, s);
-    linha(c, l, q, j, e, [e[0] + pe * Math.cos(rad(g)), e[1] + pe * Math.sin(rad(g))]);
-    return e;
-  };
-  const braco = (o, alvo, s, fixo, c, l) => {
-    const [j, e] = fixo ? [fixo, alvo] : junta(o, alvo, L.braco, L.ante, s);
-    linha(c, l, o, j, e);
-    return e;
-  };
-  const hB = braco([S[0] - sw, S[1]], p.hb, eb, p.eb, fundo, 6);
-  const tB = perna([p.h[0] - hw, p.h[1]], p.fb, kb, p.ftb, fundo, 7);
-  linha(tinta, 11, [p.h[0] - hw, p.h[1]], [p.h[0] + hw, p.h[1]], [S[0] + sw, S[1]], [S[0] - sw, S[1]], [p.h[0] - hw, p.h[1]]);
-  x.fillStyle = tinta; x.beginPath(); x.arc(C[0], C[1], 9, 0, 7); x.fill();
-  const tF = perna([p.h[0] + hw, p.h[1]], p.ff, kf, p.ftf, tinta, 7);
-  const hF = braco([S[0] + sw, S[1]], p.hf, ef, p.ef, tinta, 6);
-  if (a.banda) linha(faixa, 3, tF, tB);
-  if (a.elastico) {
-    linha(faixa, 2.5, a.elastico, hF);
-    if (a.so !== 'f') linha(faixa, 2.5, a.elastico, hB);
-    x.fillStyle = faixa; x.beginPath(); x.arc(a.elastico[0], a.elastico[1], 4, 0, 7); x.fill();
-  }
-  for (const m of a.peso || '') {
-    const h = m === 'f' ? hF : hB;
-    linha(acento, 3, [h[0] - 8, h[1]], [h[0] + 8, h[1]]);
-    linha(acento, 7, [h[0] - 8, h[1] - 4], [h[0] - 8, h[1] + 4]);
-    linha(acento, 7, [h[0] + 8, h[1] - 4], [h[0] + 8, h[1] + 4]);
-  }
-  if (a.rotulo) {
-    x.setTransform(w / 320, 0, 0, w / 320, 0, 0);
-    x.fillStyle = fundo; x.font = '12px Barlow, Arial, sans-serif'; x.fillText(a.rotulo, 14, 22);
-  }
-}
-
-// Boneco anatômico 3D: cada músculo é um volume próprio, e os trabalhados no exercício ficam vermelhos.
+// Músculos em azul no vídeo de cada exercício.
 const NOMES = {quad: 'quadríceps', gluteo: 'glúteos', abdomen: 'abdômen', posterior: 'posterior de coxa', lombar: 'lombar', panturrilha: 'panturrilha',
   costas: 'costas', biceps: 'bíceps', peito: 'peito', triceps: 'tríceps', ombro: 'ombros', trapezio: 'trapézio', adutor: 'adutores', antebraco: 'antebraço'};
 const ALVOS = {
@@ -292,236 +172,6 @@ const ALVOS = {
   'Caminhada do fazendeiro': ['antebraco', 'trapezio', 'abdomen']
 };
 const alvos = e => ALVOS[e.n].map(k => NOMES[k]).join(', ');
-const VISTA = {'Levantamento terra romeno': -35, 'Remada unilateral com halter': -35, 'Pulldown com elástico': -35, 'Face pull com elástico': -35, 'Perdigueiro': -30,
-  'Passada lateral com mini band': 195, 'Rotação externa com elástico': 200, 'Desenvolvimento com halteres': -20, 'Agachamento búlgaro': -30, 'Step-down': -30};
-Object.assign(ANIM['Dead bug'], {rosto: 'cima'});
-Object.assign(ANIM['Elevação pélvica unilateral'], {rosto: 'cima'});
-Object.assign(ANIM['Prancha lateral'], {rosto: 'z', empilhado: {o: 1, q: 1}});
-Object.assign(ANIM['Prancha Copenhagen adaptada'], {rosto: 'z', empilhado: {o: 1, q: -1}});
-Object.assign(ANIM['Pallof press'], {rotulo: '', elastico: [190, 62, 110]});
-ANIM['Rotação externa com elástico'].f.forEach((f, i) => { f[0].hfz = i < 2 ? 16 : 6; });
-
-let G;
-function iniciar3D() {
-  if (G !== undefined) return G;
-  G = null;
-  if (!window.THREE) return G;
-  try {
-    const T = THREE, r = new T.WebGLRenderer({antialias: true, alpha: true});
-    r.setSize(640, 360, false);
-    r.setClearColor(0, 0);
-    r.shadowMap.enabled = true;
-    r.shadowMap.type = T.PCFSoftShadowMap;
-    const cena = new T.Scene(), cam = new T.PerspectiveCamera(20, 16 / 9, 10, 2400);
-    cena.add(new T.HemisphereLight(0xffffff, 0x6f7c86, .5));
-    const sol = new T.DirectionalLight(0xffffff, .62);
-    sol.position.set(-90, 320, 220);
-    sol.castShadow = true;
-    sol.shadow.mapSize.set(1024, 1024);
-    Object.assign(sol.shadow.camera, {left: -240, right: 240, top: 240, bottom: -240, far: 800});
-    cena.add(sol);
-    const chao = new T.Mesh(new T.PlaneGeometry(1000, 1000), new T.ShadowMaterial({opacity: .28}));
-    chao.rotation.x = -Math.PI / 2;
-    chao.receiveShadow = true;
-    cena.add(chao);
-    const grade = new T.GridHelper(640, 16, 0x8fa3ad, 0x8fa3ad);
-    grade.material.transparent = true;
-    grade.material.opacity = .22;
-    cena.add(grade);
-
-    const mat = (c, ru = .52) => new T.MeshStandardMaterial({color: c, roughness: ru, metalness: .04});
-    const pele = mat(0xb4b8bc), verm = mat(0xc8201c), ferro = mat(0x2c3238, .35), movel = mat(0x8a98a1, .7), fita = mat(0xe67e22);
-    const bola = new T.SphereGeometry(1, 26, 18), caixa = new T.BoxGeometry(1, 1, 1), tubo = new T.CylinderGeometry(1, 1, 1, 16);
-    const UP = new T.Vector3(0, 1, 0), musc = [];
-    const novo = (g, m, pai = cena) => { const o = new T.Mesh(g, m); o.castShadow = true; pai.add(o); return o; };
-    const volume = (k, pai = cena) => { const o = novo(bola, pele, pai); if (k) musc.push([o, k]); return o; };
-    const liga = (o, a, b, l, c) => {
-      const d = b.clone().sub(a), n = d.length() || 1;
-      o.position.copy(a).addScaledVector(d, .5);
-      o.quaternion.setFromUnitVectors(UP, d.divideScalar(n));
-      o.scale.set(l, c === undefined ? n : c, l);
-    };
-    const sobre = (o, a, b, f, compr, larg, dir, off) => {
-      const d = b.clone().sub(a), n = d.length() || 1;
-      o.position.copy(a).addScaledVector(d, f).addScaledVector(dir, off);
-      o.quaternion.setFromUnitVectors(UP, d.divideScalar(n));
-      o.scale.set(larg, compr * Math.min(1.1, n / (L.coxa)), larg);
-    };
-
-    const tronco = new T.Group();
-    cena.add(tronco);
-    const local = (k, x, y, z, sx, sy, sz) => { const o = volume(k, tronco); o.position.set(x, y, z); o.scale.set(sx, sy, sz); };
-    local(null, 0, 24, 0, 12.5, 26, 8.2);
-    local(null, 0, 3, 0, 11, 8.5, 8);
-    for (const s of [-1, 1]) {
-      local('peito', s * 7, 35, 6.3, 7.3, 6, 3.7);
-      local('costas', s * 8.6, 28, -5.2, 6.6, 13.5, 3.6);
-      local('abdomen', s * 9.6, 15, 3, 3, 9.5, 4.6);
-      local('lombar', s * 3, 11, -6.4, 3, 9.5, 2.5);
-      local('gluteo', s * 5.6, -2, -5.8, 7, 7.6, 6.2);
-      for (const y of [27, 20.5, 14]) local('abdomen', s * 3.2, y, 7.5, 2.9, 3, 1.9);
-    }
-    local('trapezio', 0, 42, -3, 10, 6.4, 4.6);
-    const pescoco = novo(tubo, pele), cabeca = volume(), nariz = volume();
-
-    const braco = () => ({
-      ombro: volume('ombro'), biceps: volume('biceps'), triceps: volume('triceps'), ante: volume('antebraco'), punho: novo(tubo, pele), base: novo(tubo, pele),
-      cot: volume(), mao: volume()
-    });
-    const perna = () => ({
-      quad: volume('quad'), post: volume('posterior'), adut: volume('adutor'), pant: volume('panturrilha'), base: novo(tubo, pele), canela: novo(tubo, pele),
-      joelho: volume(), pe: volume()
-    });
-    const braF = braco(), braB = braco(), perF = perna(), perB = perna();
-
-    const halter = () => {
-      const g = new T.Group(), b = novo(tubo, ferro, g);
-      b.scale.set(1.2, 22, 1.2);
-      for (const s of [-1, 1]) { const p = novo(tubo, ferro, g); p.position.y = s * 10; p.scale.set(5.2, 6, 5.2); }
-      g.rotation.x = Math.PI / 2;
-      cena.add(g);
-      return g;
-    };
-    const halteres = {f: halter(), b: halter()};
-    const moveis = [novo(caixa, movel), novo(caixa, movel)];
-    moveis.forEach(o => { o.receiveShadow = true; });
-    const faixas = [novo(tubo, fita), novo(tubo, fita)], ancora = novo(bola, fita), poste = novo(tubo, movel);
-    ancora.scale.setScalar(4);
-
-    const P = (x, y, z = 0) => new T.Vector3(x - 160, 158 - y, z);
-    const ligaBraco = (b, o, j, e, F) => {
-      const m = o.clone().lerp(e, .5), fr = m.sub(j);
-      const dir = fr.length() > 2 ? fr.normalize() : F;
-      b.ombro.position.copy(o); b.ombro.quaternion.identity(); b.ombro.scale.set(6.2, 6.8, 6.2);
-      sobre(b.biceps, o, j, .55, 9.8, 4.3, dir, 2.3);
-      sobre(b.triceps, o, j, .5, 10.5, 4.5, dir, -2.5);
-      liga(b.base, o, j, 3.4);
-      sobre(b.ante, j, e, .34, 9.6, 3.9, dir, 0);
-      liga(b.punho, j, e, 2.5);
-      b.cot.position.copy(j); b.cot.scale.setScalar(3.5);
-      b.mao.position.copy(e); b.mao.scale.setScalar(3.6);
-    };
-    const ligaPerna = (g, o, j, e, F, dentro, ponta) => {
-      const m = o.clone().lerp(e, .5), fr = j.clone().sub(m);
-      const dir = fr.length() > 2 ? fr.normalize() : F;
-      sobre(g.quad, o, j, .5, 15, 7, dir, 2.2);
-      sobre(g.post, o, j, .52, 14.5, 5.8, dir, -3);
-      sobre(g.adut, o, j, .38, 11, 4, dentro, 3.6);
-      liga(g.base, o, j, 5.2);
-      sobre(g.pant, j, e, .34, 10.4, 4.9, dir, -2.6);
-      liga(g.canela, j, e, 3.3);
-      g.joelho.position.copy(j); g.joelho.scale.setScalar(5);
-      sobre(g.pe, e, ponta, .55, 11, 3.5, UP, 0);
-    };
-
-    let ultima = null;
-    G = {r, cena, cam};
-    G.pintar = (a, t) => {
-      if (a !== ultima) {
-        ultima = a;
-        const on = ALVOS[Object.keys(ANIM).find(k => ANIM[k] === a)] || [];
-        musc.forEach(([o, k]) => { o.material = on.includes(k) ? verm : pele; });
-        const nome = Object.keys(ANIM).find(k => ANIM[k] === a), yaw = rad(VISTA[nome] ?? (a.frente ? -20 : 28));
-        // Enquadra o movimento inteiro para o boneco ocupar a tela, em pé ou deitado.
-        const pts = a.f.flatMap(([q]) => {
-          const S = [q.h[0] + L.tronco * Math.sin(rad(q.lean)), q.h[1] - L.tronco * Math.cos(rad(q.lean))];
-          return [q.h, q.ff, q.fb, q.hf, q.hb, S, [S[0] + 25 * Math.sin(rad(q.hl ?? q.lean)), S[1] - 25 * Math.cos(rad(q.hl ?? q.lean))]];
-        }).concat([[160, 158]]);
-        if (a.banco) pts.push([a.banco[0], a.banco[1]], [a.banco[0] + a.banco[2], a.banco[1]]);
-        if (a.elastico && a.elastico[1] < 158) pts.push(a.elastico);
-        const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-        const cx = (x0 + x1) / 2 - 160, cy = 158 - (y0 + y1) / 2, d = Math.max((x1 - x0 + 70) / .627, (y1 - y0 + 44) / .3527);
-        cam.position.set(cx + Math.sin(yaw) * d * .97, cy + d * .2, Math.cos(yaw) * d * .97);
-        cam.lookAt(cx, cy, 0);
-        const blocos = [a.banco && [a.banco[0] + a.banco[2] / 2, a.banco[3] / 2 + 158 - a.banco[1] - a.banco[3], a.banco[2], a.banco[3], 46],
-          a.parede && [a.parede + 3, 85, 6, 170, 60]].filter(Boolean);
-        moveis.forEach((o, i) => {
-          o.visible = !!blocos[i];
-          if (blocos[i]) { const [x, y, w, h, p] = blocos[i]; o.position.set(x - 160, y, 0); o.scale.set(w, h, p); }
-        });
-        const el = a.elastico;
-        ancora.visible = poste.visible = !!el;
-        if (el) {
-          ancora.position.copy(P(el[0], el[1], el[2] || 0));
-          liga(poste, P(el[0], 158, el[2] || 0), ancora.position, 2);
-        }
-      }
-      const p = poseEm(a, t), sn = Math.sin(rad(p.lean)), cs = Math.cos(rad(p.lean));
-      const S = [p.h[0] + L.tronco * sn, p.h[1] - L.tronco * cs], hl = rad(p.hl ?? p.lean), C = [S[0] + 16 * Math.sin(hl), S[1] - 16 * Math.cos(hl)];
-      const sw = a.sw || 0, hw = a.hw || 0, plano = a.frente || a.empilhado, zs = plano ? 0 : 15, zh = plano ? 0 : 7;
-      const eo = a.empilhado ? a.empilhado.o * 9 : 0, eq = a.empilhado ? a.empilhado.q * 6 : 0;
-      const sF = [S[0] + sw, S[1] + eo], sB = [S[0] - sw, S[1] - eo], qF = [p.h[0] + hw, p.h[1] + eq], qB = [p.h[0] - hw, p.h[1] - eq];
-      const [kf, kb] = par(a.ks ?? -1), [ef, eb] = par(a.es ?? 1), pe = a.frente ? 9 : 13;
-      const sinal = a.rosto === 'cima' ? -1 : 1;
-      const F = a.frente || a.rosto === 'z' ? new T.Vector3(0, 0, 1) : new T.Vector3(sinal * cs, -sinal * sn, 0);
-      const H3 = P(p.h[0], p.h[1]), S3 = P(S[0], S[1]), C3 = P(C[0], C[1]);
-      const Y = S3.clone().sub(H3).normalize(), X = Y.clone().cross(F).normalize();
-      tronco.position.copy(H3);
-      tronco.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(X, Y, F));
-      liga(pescoco, S3, C3, 4.4);
-      cabeca.position.copy(C3); cabeca.quaternion.copy(tronco.quaternion); cabeca.scale.set(6.8, 8.6, 7.6);
-      const Fc = a.frente || a.rosto === 'z' ? F : new T.Vector3(sinal * Math.cos(hl), -sinal * Math.sin(hl), 0);
-      nariz.position.copy(C3).addScaledVector(Fc, 8.4); nariz.scale.set(1.5, 2.2, 1.8);
-      const arm = (o, alvo, s, fixo, z, zm) => {
-        const [j, e] = fixo ? [fixo, alvo] : junta(o, alvo, L.braco, L.ante, s);
-        return [P(o[0], o[1], z), P(j[0], j[1], (z + zm) / 2), P(e[0], e[1], zm)];
-      };
-      const leg = (o, alvo, s, g, z) => {
-        const [j, e] = junta(o, alvo, L.coxa, L.canela, s), tp = [e[0] + pe * Math.cos(rad(g)), e[1] + pe * Math.sin(rad(g))];
-        return [P(o[0], o[1], z), P(j[0], j[1], z), P(e[0], e[1], z), a.frente ? P(e[0], e[1], z + 13) : P(tp[0], tp[1], z)];
-      };
-      const mF = arm(sF, p.hf, ef, p.ef, zs, p.hfz ?? zs), mB = arm(sB, p.hb, eb, p.eb, -zs, -zs);
-      ligaBraco(braF, mF[0], mF[1], mF[2], F);
-      ligaBraco(braB, mB[0], mB[1], mB[2], F);
-      const lF = leg(qF, p.ff, kf, p.ftf, zh), lB = leg(qB, p.fb, kb, p.ftb, -zh);
-      const dentroF = lB[0].clone().sub(lF[0]).normalize(), dentroB = dentroF.clone().negate();
-      ligaPerna(perF, lF[0], lF[1], lF[2], F, dentroF, lF[3]);
-      ligaPerna(perB, lB[0], lB[1], lB[2], F, dentroB, lB[3]);
-      for (const m of ['f', 'b']) {
-        const usa = (a.peso || '').includes(m);
-        halteres[m].visible = usa;
-        if (usa) halteres[m].position.copy(m === 'f' ? mF[2] : mB[2]);
-      }
-      faixas.forEach(o => { o.visible = false; });
-      if (a.banda) { faixas[0].visible = true; liga(faixas[0], lF[2], lB[2], 1.5); }
-      if (a.elastico) {
-        faixas[0].visible = true; liga(faixas[0], ancora.position, mF[2], 1.1);
-        if (a.so !== 'f') { faixas[1].visible = true; liga(faixas[1], ancora.position, mB[2], 1.1); }
-      }
-      r.render(cena, cam);
-      return r.domElement;
-    };
-  } catch { G = null; }
-  return G;
-}
-function desenhar3D(cv, a, t) {
-  const g = iniciar3D();
-  if (!g) return false;
-  const img = g.pintar(a, t), x = cv.getContext('2d');
-  x.setTransform(1, 0, 0, 1, 0, 0);
-  x.clearRect(0, 0, cv.width, cv.height);
-  x.drawImage(img, 0, 0, cv.width, cv.height);
-  return true;
-}
-
-const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let volta = 0;
-function pintar(cv, ms) {
-  const a = ANIM[cv.dataset.ex], w = Math.round(cv.clientWidth * Math.min(devicePixelRatio || 1, 2));
-  if (!a || !w) return;
-  if (cv.width !== w) { cv.width = w; cv.height = Math.round(w * 9 / 16); }
-  const t = parado ? a.f[0][1] + a.f[1][1] + .01 : ms / 1000;
-  if (!desenhar3D(cv, a, t)) desenharAnim(cv, a, t);
-}
-// O quadro do treino anda a cada frame; as miniaturas se revezam para poupar o celular.
-function animar(ms) {
-  const todos = [...document.querySelectorAll('canvas.anim')], foco = todos.filter(c => c.closest('#player')), mini = todos.filter(c => !c.closest('#player'));
-  foco.forEach(c => pintar(c, ms));
-  mini.forEach((c, i) => { if (!c.width || c.width === 300 || i === volta % mini.length) pintar(c, ms); });
-  volta++;
-  requestAnimationFrame(animar);
-}
-
 function montar() {
   const s = SESSOES[sessao], lista = [{k: 'warm', dur: 240}];
   s.ex.forEach((e, i) => {
@@ -625,7 +275,7 @@ function desenhar() {
     <div><h3>${e.n}</h3>
     <p class="dose">${series} × ${dose(e)} · descanso ${e.rest} s</p>
     <p class="cue">${e.cue}</p>
-    <p class="cue"><b>Trabalha:</b> ${alvos(e)}</p></div>${quadro(e)}</li>`).join('');
+    <p class="cue"><b>Trabalha:</b> ${alvos(e)}</p>${aviso(e)}</div>${quadro(e)}</li>`).join('');
 
   pl.classList.toggle('rest', !!atual && atual.k === 'rest');
   if (!atual) {
@@ -642,7 +292,7 @@ function desenhar() {
     if (!correndo) $('main').onclick = () => { cronometrar(atual.dur); desenhar(); };
   } else if (atual.k === 'work') {
     const e = atual.e, t = `<span class="tag">Exercício ${atual.i + 1} de ${s.ex.length} · série ${atual.n} de ${series}</span><h2>${e.n}</h2>`;
-    const dica = `${quadro(e)}<p><b>Trabalha:</b> ${alvos(e)}</p><p>${e.cue}</p>`;
+    const dica = `${quadro(e, true)}<p><b>Trabalha:</b> ${alvos(e)}</p><p>${e.cue}</p>${aviso(e)}`;
     if (e.seg) {
       const correndo = relogio || restante !== null;
       pl.innerHTML = `${t}${atual.lado ? `<p class="reps">${atual.lado}</p>` : ''}<p id="prep" ${correndo ? '' : 'hidden'}>Posicione-se: o tempo começa em 5 segundos.</p>
@@ -654,7 +304,7 @@ function desenhar() {
     }
   } else if (atual.k === 'rest') {
     const titulo = atual.troca ? 'Troque de lado' : `Próximo: ${atual.prox.n}`;
-    const prox = atual.troca ? '' : `<p>${atual.prox === atual.e ? `Série ${atual.n + 1} de ${series}` : `Primeira série · ${dose(atual.prox)}`}</p>${atual.prox === atual.e ? '' : quadro(atual.prox)}`;
+    const prox = atual.troca ? '' : `<p>${atual.prox === atual.e ? `Série ${atual.n + 1} de ${series}` : `Primeira série · ${dose(atual.prox)}`}</p>${atual.prox === atual.e ? '' : quadro(atual.prox, true)}`;
     pl.innerHTML = `<span class="tag">Descanso</span><h2>${titulo}</h2><div class="clock">${mmss(restante !== null ? restante : faltam())}</div>${prox}${botoes('')}`;
   } else {
     pl.innerHTML = `<span class="tag">Treino concluído</span><h2>${s.nome} cumprido!</h2>
@@ -685,7 +335,10 @@ $('tabs').onclick = ev => {
 };
 [2, 3].forEach(n => { $('s' + n).onclick = () => { series = n; guardar('meuz-series', String(n)); encerrar(); }; });
 desenhar();
-requestAnimationFrame(animar);
+$('list').addEventListener('click', ev => {
+  const v = ev.target.closest('video');
+  if (v) v.paused ? v.play() : v.pause();
+});
 </script>
 
 </body></html>

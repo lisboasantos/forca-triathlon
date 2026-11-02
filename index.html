@@ -312,7 +312,7 @@ function iniciar3D() {
     r.setClearColor(0, 0);
     r.shadowMap.enabled = true;
     r.shadowMap.type = T.PCFSoftShadowMap;
-    const cena = new T.Scene(), cam = new T.PerspectiveCamera(28, 16 / 9, 10, 1600);
+    const cena = new T.Scene(), cam = new T.PerspectiveCamera(20, 16 / 9, 10, 2400);
     cena.add(new T.HemisphereLight(0xffffff, 0x6f7c86, .5));
     const sol = new T.DirectionalLight(0xffffff, .62);
     sol.position.set(-90, 320, 220);
@@ -392,7 +392,7 @@ function iniciar3D() {
     const ligaBraco = (b, o, j, e, F) => {
       const m = o.clone().lerp(e, .5), fr = m.sub(j);
       const dir = fr.length() > 2 ? fr.normalize() : F;
-      b.ombro.position.copy(o); b.ombro.quaternion.identity(); b.ombro.scale.set(7.4, 7.8, 7.4);
+      b.ombro.position.copy(o); b.ombro.quaternion.identity(); b.ombro.scale.set(6.2, 6.8, 6.2);
       sobre(b.biceps, o, j, .55, 9.8, 4.3, dir, 2.3);
       sobre(b.triceps, o, j, .5, 10.5, 4.5, dir, -2.5);
       liga(b.base, o, j, 3.4);
@@ -430,11 +430,11 @@ function iniciar3D() {
         if (a.banco) pts.push([a.banco[0], a.banco[1]], [a.banco[0] + a.banco[2], a.banco[1]]);
         if (a.elastico && a.elastico[1] < 158) pts.push(a.elastico);
         const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-        const cx = (x0 + x1) / 2 - 160, cy = 158 - (y0 + y1) / 2, d = Math.max((x1 - x0 + 30) / .8865, (y1 - y0 + 34) / .4987);
+        const cx = (x0 + x1) / 2 - 160, cy = 158 - (y0 + y1) / 2, d = Math.max((x1 - x0 + 70) / .627, (y1 - y0 + 44) / .3527);
         cam.position.set(cx + Math.sin(yaw) * d * .97, cy + d * .2, Math.cos(yaw) * d * .97);
         cam.lookAt(cx, cy, 0);
         const blocos = [a.banco && [a.banco[0] + a.banco[2] / 2, a.banco[3] / 2 + 158 - a.banco[1] - a.banco[3], a.banco[2], a.banco[3], 46],
-          a.parede && [a.parede + 3, 100, 6, 200, 70]].filter(Boolean);
+          a.parede && [a.parede + 3, 85, 6, 170, 60]].filter(Boolean);
         moveis.forEach((o, i) => {
           o.visible = !!blocos[i];
           if (blocos[i]) { const [x, y, w, h, p] = blocos[i]; o.position.set(x - 160, y, 0); o.scale.set(w, h, p); }
@@ -459,7 +459,7 @@ function iniciar3D() {
       tronco.position.copy(H3);
       tronco.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(X, Y, F));
       liga(pescoco, S3, C3, 4.4);
-      cabeca.position.copy(C3); cabeca.quaternion.copy(tronco.quaternion); cabeca.scale.set(7.8, 9.6, 8.6);
+      cabeca.position.copy(C3); cabeca.quaternion.copy(tronco.quaternion); cabeca.scale.set(6.8, 8.6, 7.6);
       const Fc = a.frente || a.rosto === 'z' ? F : new T.Vector3(sinal * Math.cos(hl), -sinal * Math.sin(hl), 0);
       nariz.position.copy(C3).addScaledVector(Fc, 8.4); nariz.scale.set(1.5, 2.2, 1.8);
       const arm = (o, alvo, s, fixo, z, zm) => {

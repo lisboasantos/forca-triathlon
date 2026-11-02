@@ -66,7 +66,7 @@ video.anim{display:block;width:100%;max-height:60vh;object-fit:contain;border-ra
 <main class="wrap">
   <header>
     <h1>Força para triathlon</h1>
-    <p class="lead">Três treinos por semana: pernas, nado e estabilidade. Toque em começar e siga a sequência.</p>
+    <p class="lead">Três treinos de força e três sessões Base de 4 exercícios, com 15 a 20 minutos. Toque em começar e siga a sequência.</p>
   </header>
 
   <nav class="tabs" id="tabs" aria-label="Escolha o treino"></nav>
@@ -99,6 +99,15 @@ video.anim{display:block;width:100%;max-height:60vh;object-fit:contain;border-ra
       <li><b>Material:</b> halteres ou kettlebell, banco ou degrau, elástico com alça e mini band.</li>
       <li><b>Treinador:</b> avise que a semana ganhou três sessões, para ele contar essa carga na planilha.</li>
     </ul>
+    <h2>Programa Base</h2>
+    <ul>
+      <li><b>Objetivo:</b> cobrir o que os treinos A, B e C não trabalham: pé, sóleo, flexores do quadril, posterior em alongamento e movimento lateral. Serve para prevenir lesão, não para ganhar watts.</li>
+      <li><b>Prioridade:</b> os treinos A, B e C vêm primeiro. Em dia cansado ou corrido, a sessão Base é a primeira a sair.</li>
+      <li><b>Esforço:</b> termine cada série com folga, sem ficar dolorido no dia seguinte. A Base não deve pesar no treino de terça nem no de sábado.</li>
+      <li><b>Séries:</b> siga o mesmo botão dos treinos: 2 nas semanas 1 e 2, e 3 a partir da semana 3. Cada exercício muda de versão nas semanas 5 e 9, como indicado na descrição.</li>
+      <li><b>Sábado:</b> a Base 3 é feita antes da corrida, sem exercício de pé. Em dia de teste ou prova, pule o afundo.</li>
+    </ul>
+    <p class="src"><b>Estudos do Base:</b> um programa de quadril e core feito antes da corrida reduziu lesões por sobrecarga, e o de tornozelo e pé não reduziu e teve mais lesões agudas (<a href="https://doi.org/10.1136/bjsports-2023-107926">Leppänen et al., 2024</a>). Já outro ensaio achou menos lesões com treino do pé (<a href="https://doi.org/10.1177/0363546520969205">Taddei et al., 2020</a>). Por isso o pé entra com pouca carga e longe da corrida. Os estudos foram feitos com corredores, não com triatletas. A escolha e a divisão dos exercícios são adaptações minhas.</p>
     <p class="src"><b>Base:</b> a força melhora economia e contrarrelógio em atletas de endurance (<a href="https://link.springer.com/doi/10.1007/s40279-014-0157-y">Beattie et al., 2014</a>), e cargas altas ajudam mais a economia em ritmos fortes (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11052887">meta-análise de 2024</a>). A pesquisa não encontrou estudo específico de triatletas nem prova de que três sessões rendam mais que duas. As três sessões seguem o seu pedido, e a escolha dos exercícios é uma adaptação minha.</p>
   </section>
 </main>
@@ -131,21 +140,39 @@ const SESSOES = {
     {n: 'Perdigueiro', reps: 8, lado: true, rest: 30, cue: 'Coluna neutra e mão de apoio empurrando o chão.'},
     {n: 'Prancha lateral', seg: 30, lado: true, rest: 30, cue: 'Cotovelo sob o ombro e quadril alto.'},
     {n: 'Caminhada do fazendeiro', seg: 40, rest: 60, cue: 'Halteres pesados, tronco ereto e passos curtos.'}
+  ]},
+  d: {nome: 'Base 1', dia: 'Segunda', foco: 'Pé e posterior', aq: 120, aqTexto: 'Caminhe em ritmo leve, circule tornozelos e quadril e faça pontes de glúteo devagar.', ex: [
+    {n: 'Pé curto', reps: 8, lado: true, rest: 20, cue: 'Sentado e descalço, puxe a base do dedão em direção ao calcanhar sem enrolar os dedos. Segure 5 segundos. Da semana 5, em pé. Da semana 9, em um pé só.'},
+    {n: 'Panturrilha sentada', reps: 15, lado: true, rest: 30, cue: 'Joelho a 90 graus e halter sobre a coxa. Suba em 1 segundo e desça em 3. Da semana 5, aumente o peso. Da semana 9, faça uma pausa de 2 segundos no alto.'},
+    {n: 'Flexão de quadril com mini band', reps: 10, lado: true, rest: 30, cue: 'Deitado de costas, com a banda nos pés. Traga um joelho ao peito sem arquear a lombar. Da semana 5, segure 3 segundos no alto. Da semana 9, use uma banda mais forte.'},
+    {n: 'Flexora com toalha', reps: 8, rest: 45, cue: 'Deitado, com os calcanhares sobre a toalha em piso liso e o quadril elevado. Deslize os pés para longe em 3 segundos e puxe de volta. Da semana 5, passe a 10 repetições. Da semana 9, faça com uma perna, 5 por lado.'}
+  ]},
+  e: {nome: 'Base 2', dia: 'Quinta', foco: 'Quadril lateral e equilíbrio', aq: 120, aqTexto: 'Caminhe em ritmo leve, circule o quadril e faça passos laterais sem peso.', ex: [
+    {n: 'Afundo lateral alternado', reps: 8, lado: true, rest: 30, cue: 'Passo largo para o lado, quadril para trás e joelho na direção do pé. Da semana 5, segure um halter leve. Da semana 9, cruze o passo ao voltar.'},
+    {n: 'Abdução de quadril deitado', reps: 12, lado: true, rest: 20, cue: 'De lado, com a perna de cima reta e o pé paralelo ao chão. Suba em 1 segundo e desça em 3, sem girar a pelve. Da semana 5, com mini band. Da semana 9, com banda mais forte.'},
+    {n: 'Queda pélvica no degrau', reps: 10, lado: true, rest: 30, cue: 'Em pé no degrau, com a perna livre para fora dele. Deixe esse lado da pelve descer e suba usando o quadril da perna de apoio, com o joelho quieto. Da semana 5, segure 3 segundos no alto.'},
+    {n: 'Equilíbrio em um pé', seg: 30, lado: true, rest: 15, cue: 'Descalço, com o joelho levemente flexionado e o arco do pé ativo. Da semana 5, feche os olhos com apoio por perto. Da semana 9, sobre uma almofada.'}
+  ]},
+  f: {nome: 'Base 3', dia: 'Sábado', foco: 'Ativação antes da corrida', aq: 300, aqTexto: 'Trote em oito por 10 a 15 metros, depois joelho alto, calcanhar no glúteo e deslocamento lateral, voltando em trote.', ex: [
+    {n: 'Prancha com elevação de perna', seg: 25, rest: 20, cue: 'Antebraços no chão e corpo em linha reta. Alterne a perna a cada 2 segundos sem deixar o quadril girar. Da semana 5, 30 segundos. Da semana 9, 40 segundos.'},
+    {n: 'Caminhada com mini band frente e trás', reps: 20, rest: 20, cue: 'Joelhos levemente flexionados e a banda sempre esticada. Vinte passos no total. Da semana 5, 25 passos. Da semana 9, 30 passos.'},
+    {n: 'Flexão de quadril em pé com mini band', reps: 10, lado: true, rest: 20, cue: 'Em pé, com a banda nos pés e o tronco alto. Suba o joelho até a altura do quadril, sem inclinar para trás. Se precisar, apoie uma mão na parede.'},
+    {n: 'Afundo em três direções', reps: 3, lado: true, rest: 30, cue: 'Sem peso, três passos para a frente, três para o lado e três para trás, por perna. Movimento controlado, sem saltos.'}
   ]}
 };
 
 const $ = id => document.getElementById(id);
 const ler = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
-const hoje = {2: 'a', 3: 'b', 5: 'c'}[new Date().getDay()];
-const inicial = ['a', 'b', 'c'].includes(location.hash.slice(1)) ? location.hash.slice(1) : hoje || 'a';
+const hoje = {1: 'd', 2: 'a', 3: 'b', 4: 'e', 5: 'c', 6: 'f'}[new Date().getDay()];
+const inicial = SESSOES[location.hash.slice(1)] ? location.hash.slice(1) : hoje || 'a';
 
 let sessao = inicial, series = Number(ler('meuz-series', '2'));
 let passos = [], idx = -1, fim = 0, restante = null, ultimoBip = null, audio = null, trava = null, relogio = null;
 
 const dose = e => (e.seg ? e.seg + ' s' : e.reps + ' reps') + (e.lado ? ' por lado' : '');
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-const SEM_VIDEO = ['Dead bug', 'Elevação pélvica unilateral'];
+const SEM_VIDEO = ['Dead bug', 'Elevação pélvica unilateral', ...['d', 'e', 'f'].flatMap(k => SESSOES[k].ex.map(e => e.n))];
 const AVISOS = {
   'Panturrilha unilateral no degrau': 'O vídeo mostra a perna livre subindo. No treino, ela fica quieta e só o calcanhar da perna de apoio sobe e desce.',
   'Flexão de braço': 'O vídeo quase não desce. No treino, desça em 2 segundos até o peito ficar perto do chão.',
@@ -156,13 +183,14 @@ const AVISOS = {
 const arquivo = e => e.n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-');
 // No treino o vídeo roda sozinho; na lista ele mostra um quadro e toca ao receber um toque.
 const quadro = (e, roda) => SEM_VIDEO.includes(e.n)
-  ? '<p class="sem">Vídeo em refação. Siga a descrição.</p>'
+  ? '<p class="sem">Vídeo ainda não gerado. Siga a descrição.</p>'
   : `<video class="anim" src="videos/${arquivo(e)}.mp4#t=2.5" muted loop playsinline preload="metadata" ${roda ? 'autoplay' : ''} aria-label="Demonstração: ${e.n}"></video>`;
 const aviso = e => AVISOS[e.n] ? `<p class="cue"><b>Atenção:</b> ${AVISOS[e.n]}</p>` : '';
 
 // Músculos em azul no vídeo de cada exercício.
 const NOMES = {quad: 'quadríceps', gluteo: 'glúteos', abdomen: 'abdômen', posterior: 'posterior de coxa', lombar: 'lombar', panturrilha: 'panturrilha',
-  costas: 'costas', biceps: 'bíceps', peito: 'peito', triceps: 'tríceps', ombro: 'ombros', trapezio: 'trapézio', adutor: 'adutores', antebraco: 'antebraço'};
+  costas: 'costas', biceps: 'bíceps', peito: 'peito', triceps: 'tríceps', ombro: 'ombros', trapezio: 'trapézio', adutor: 'adutores', antebraco: 'antebraço',
+  pe: 'musculatura do pé', soleo: 'sóleo', flexor: 'flexores do quadril', abdutor: 'glúteo médio'};
 const ALVOS = {
   'Agachamento goblet': ['quad', 'gluteo', 'abdomen'], 'Levantamento terra romeno': ['posterior', 'gluteo', 'lombar'], 'Agachamento búlgaro': ['quad', 'gluteo'],
   'Panturrilha unilateral no degrau': ['panturrilha'], 'Prancha frontal': ['abdomen'], 'Dead bug': ['abdomen'],
@@ -170,11 +198,15 @@ const ALVOS = {
   'Desenvolvimento com halteres': ['ombro', 'triceps'], 'Face pull com elástico': ['ombro', 'trapezio'], 'Rotação externa com elástico': ['ombro'], 'Pallof press': ['abdomen'],
   'Elevação pélvica unilateral': ['gluteo', 'posterior'], 'Step-down': ['quad', 'gluteo'], 'Passada lateral com mini band': ['gluteo'],
   'Prancha Copenhagen adaptada': ['adutor', 'abdomen'], 'Perdigueiro': ['lombar', 'gluteo', 'abdomen'], 'Prancha lateral': ['abdomen'],
-  'Caminhada do fazendeiro': ['antebraco', 'trapezio', 'abdomen']
+  'Caminhada do fazendeiro': ['antebraco', 'trapezio', 'abdomen'],
+  'Pé curto': ['pe'], 'Panturrilha sentada': ['soleo'], 'Flexão de quadril com mini band': ['flexor'], 'Flexora com toalha': ['posterior', 'gluteo'],
+  'Afundo lateral alternado': ['adutor', 'gluteo', 'quad'], 'Abdução de quadril deitado': ['abdutor'], 'Queda pélvica no degrau': ['abdutor'], 'Equilíbrio em um pé': ['pe', 'panturrilha'],
+  'Prancha com elevação de perna': ['abdomen', 'gluteo'], 'Caminhada com mini band frente e trás': ['abdutor', 'gluteo'], 'Flexão de quadril em pé com mini band': ['flexor'],
+  'Afundo em três direções': ['quad', 'gluteo', 'adutor']
 };
 const alvos = e => ALVOS[e.n].map(k => NOMES[k]).join(', ');
 function montar() {
-  const s = SESSOES[sessao], lista = [{k: 'warm', dur: 240}];
+  const s = SESSOES[sessao], lista = [{k: 'warm', dur: s.aq || 240}];
   s.ex.forEach((e, i) => {
     for (let n = 1; n <= series; n++) {
       if (e.seg && e.lado) {
@@ -281,7 +313,7 @@ function desenhar() {
   pl.classList.toggle('rest', !!atual && atual.k === 'rest');
   if (!atual) {
     pl.innerHTML = `<span class="tag">${s.nome} · ${s.dia}</span><h2>${s.foco}</h2>
-      <p>Comece com 4 minutos de aquecimento. Depois, o descanso entre as séries roda sozinho e toca um aviso.</p>
+      <p>Comece com ${(s.aq || 240) / 60} minutos de aquecimento. Depois, o descanso entre as séries roda sozinho e toca um aviso.</p>
       <div class="controls"><button class="main" id="main" type="button">Começar treino</button></div>`;
     $('main').onclick = () => { iniciarRecursos(); passos = montar(); ir(0); };
     return;
@@ -289,7 +321,7 @@ function desenhar() {
   if (atual.k === 'warm') {
     const correndo = relogio || restante !== null;
     pl.innerHTML = `<span class="tag">Aquecimento</span><div class="clock">${mmss(restante !== null ? restante : correndo ? faltam() : atual.dur)}</div>
-      <p>${AQUECIMENTO}</p>${botoes(correndo ? '' : 'Iniciar aquecimento')}`;
+      <p>${s.aqTexto || AQUECIMENTO}</p>${botoes(correndo ? '' : 'Iniciar aquecimento')}`;
     if (!correndo) $('main').onclick = () => { cronometrar(atual.dur); desenhar(); };
   } else if (atual.k === 'work') {
     const e = atual.e, t = `<span class="tag">Exercício ${atual.i + 1} de ${s.ex.length} · série ${atual.n} de ${series}</span><h2>${e.n}</h2>`;

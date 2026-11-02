@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="referrer" content="strict-origin-when-cross-origin"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Força Triathlon MEUZ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: uma coluna de academia. O cronômetro fica no topo e a sequência completa logo abaixo, legível com o celular apoiado no chão. */
+:root{
+  --bg:#eef2f4;--surface:#fff;--ink:#14242e;--muted:#566873;--line:#cfd9de;
+  --work:#0a6c8f;--work-ink:#fff;--rest:#b4560d;--rest-ink:#fff;--soft:#dcebf0;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1b22;--surface:#182832;--ink:#e9f0f3;--muted:#9fb0ba;--line:#2e424e;
+  --work:#3fb4dc;--work-ink:#06232e;--rest:#f0a35a;--rest-ink:#2c1503;--soft:#20404e;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1b22;--surface:#182832;--ink:#e9f0f3;--muted:#9fb0ba;--line:#2e424e;
+  --work:#3fb4dc;--work-ink:#06232e;--rest:#f0a35a;--rest-ink:#2c1503;--soft:#20404e;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--body)}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+h1,h2,h3{font-family:var(--display);line-height:1.08;margin:0;text-wrap:balance}
+h1{font-size:2.5rem}
+h2{font-size:1.55rem}
+p{margin:0}
+.lead{color:var(--muted);margin-top:4px}
+a{color:var(--work);font-weight:600}
+button{font:600 1rem var(--body);color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:8px;min-height:46px;padding:8px 14px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--work);outline-offset:2px}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tabs button{display:grid;gap:1px;text-align:left;padding:10px 12px}
+.tabs b{font:700 1.25rem var(--display)}
+.tabs span{font-size:.82rem;color:var(--muted);font-weight:500}
+.tabs button[aria-pressed="true"]{background:var(--work);border-color:var(--work);color:var(--work-ink)}
+.tabs button[aria-pressed="true"] span{color:inherit}
+.row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.seg{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.92rem}
+.seg button{min-width:46px;padding:6px 10px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.player{background:var(--work);color:var(--work-ink);border-radius:10px;padding:18px;display:grid;gap:10px}
+.player.rest{background:var(--rest);color:var(--rest-ink)}
+.player .tag{font:700 1rem var(--display);letter-spacing:.08em;text-transform:uppercase}
+.player h2{font-size:2rem}
+.clock{font:700 clamp(5rem,27vw,9rem)/.95 var(--display);font-variant-numeric:tabular-nums}
+.reps{font:700 clamp(2.6rem,12vw,4rem)/1 var(--display)}
+.player p{min-width:0}
+.player a{color:inherit}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.controls button{background:transparent;border-color:currentColor;color:inherit}
+.controls .main{flex:1 1 100%;min-height:64px;font-size:1.25rem;background:var(--surface);color:var(--ink);border-color:var(--surface)}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.list li{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;grid-template-columns:32px minmax(0,1fr);gap:0 8px}
+.list li.now{border-color:var(--work);box-shadow:inset 0 0 0 1px var(--work)}
+.list li.past{opacity:.6}
+.n{font:700 1.5rem/1.1 var(--display);color:var(--muted);font-variant-numeric:tabular-nums}
+.list h3{font-size:1.28rem}
+.dose{font-weight:600;font-variant-numeric:tabular-nums}
+.cue{color:var(--muted);font-size:.94rem}
+.notes{display:grid;gap:12px;background:var(--soft);border-radius:10px;padding:16px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.src{font-size:.86rem;color:var(--muted)}
+.video{aspect-ratio:16/9;width:100%;max-width:100%;border-radius:8px;overflow:hidden;background:#000}
+.video iframe{display:block;width:100%;height:100%;border:0}
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Força para triathlon</h1>
+    <p class="lead">Três treinos por semana: pernas, nado e estabilidade. Toque em começar e siga a sequência.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Escolha o treino"></nav>
+
+  <section class="player" id="player" aria-live="polite"></section>
+
+  <div class="row">
+    <h2 id="sum"></h2>
+    <div class="seg" role="group" aria-label="Séries por exercício">
+      <span>Séries</span>
+      <button id="s2" type="button">2</button>
+      <button id="s3" type="button">3</button>
+    </div>
+  </div>
+  <p><a id="fila" target="_blank" rel="noopener">Abrir todos os vídeos em sequência no YouTube</a></p>
+  <ol class="list" id="list"></ol>
+
+  <section class="notes">
+    <h2>Como progredir</h2>
+    <ul>
+      <li><b>Semanas 1 e 2:</b> 2 séries, terminando cada uma com 3 a 4 repetições sobrando.</li>
+      <li><b>Semanas 3 e 4:</b> 3 séries, com a mesma folga.</li>
+      <li><b>A partir da semana 5:</b> nos treinos A e B, suba a carga até sobrarem 2 repetições.</li>
+      <li><b>Treino C:</b> continua leve, porque vem antes do treino longo de sábado e domingo.</li>
+      <li><b>Dor:</b> dor articular ou aguda encerra o exercício.</li>
+    </ul>
+    <h2>Encaixe na semana</h2>
+    <ul>
+      <li><b>Quarta:</b> faça o treino B depois da natação, ou ao menos 6 horas antes dela.</li>
+      <li><b>Esta semana:</b> comece na terça, 03/11, com carga leve, porque o teste de 3 km foi na véspera.</li>
+      <li><b>Material:</b> halteres ou kettlebell, banco ou degrau, elástico com alça e mini band.</li>
+      <li><b>Treinador:</b> avise que a semana ganhou três sessões, para ele contar essa carga na planilha.</li>
+    </ul>
+    <p class="src"><b>Base:</b> a força melhora economia e contrarrelógio em atletas de endurance (<a href="https://link.springer.com/doi/10.1007/s40279-014-0157-y">Beattie et al., 2014</a>), e cargas altas ajudam mais a economia em ritmos fortes (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11052887">meta-análise de 2024</a>). A pesquisa não encontrou estudo específico de triatletas nem prova de que três sessões rendam mais que duas. As três sessões seguem o seu pedido, e a escolha dos exercícios é uma adaptação minha.</p>
+  </section>
+</main>
+
+<script>
+const AQUECIMENTO = 'Polichinelo ou trote parado, agachamento livre, ponte de glúteo e círculos de ombro.';
+const SESSOES = {
+  a: {nome: 'Treino A', dia: 'Terça', foco: 'Pernas e core', ex: [
+    {n: 'Agachamento goblet', reps: 8, rest: 90, id: 'ge1vdJRP0UA', t: 6, cue: 'Peso junto ao peito, joelhos seguindo os pés. Desça em 3 segundos.'},
+    {n: 'Levantamento terra romeno', reps: 8, rest: 90, id: 'jSomWOwLiGE', t: 0, cue: 'Quadril para trás, coluna neutra, halteres perto das pernas.'},
+    {n: 'Agachamento búlgaro', reps: 8, lado: true, rest: 75, id: 'IL4ebT8L1aQ', t: 18, cue: 'Pé de trás no banco. Tronco firme e joelho estável.'},
+    {n: 'Panturrilha unilateral no degrau', reps: 12, lado: true, rest: 45, id: 'Xb-nuSxLVSY', t: 20, cue: 'Suba em 1 segundo e desça em 3. Protege o tendão na corrida.'},
+    {n: 'Prancha frontal', seg: 35, rest: 30, id: 'qNRqGqESAWU', t: 15, cue: 'Glúteo contraído, quadril alinhado, sem prender a respiração.'},
+    {n: 'Dead bug', reps: 8, lado: true, rest: 30, id: 'o4GKiEoYClI', t: 0, cue: 'Lombar colada no chão enquanto braço e perna opostos descem.'}
+  ]},
+  b: {nome: 'Treino B', dia: 'Quarta', foco: 'Superior e core', ex: [
+    {n: 'Remada unilateral com halter', reps: 10, lado: true, rest: 75, id: 'E008-XIJBEk', t: 0, cue: 'Puxe o cotovelo em direção ao quadril, sem girar o tronco.'},
+    {n: 'Flexão de braço', reps: 10, rest: 75, id: 'dHgoYiCraCw', t: 5, cue: 'Corpo em linha reta. Se necessário, apoie os joelhos.'},
+    {n: 'Pulldown com elástico', reps: 12, rest: 60, id: 'aXwWVpzJyLU', t: 0, cue: 'Braços quase estendidos, trazendo as mãos até a coxa, como na puxada do nado.'},
+    {n: 'Desenvolvimento com halteres', reps: 8, rest: 75, id: 'eufDL9MmF8A', t: 0, cue: 'Abdômen firme, sem arquear a lombar. Use carga moderada.'},
+    {n: 'Face pull com elástico', reps: 15, rest: 45, id: 'GjfwIHrfgSw', t: 3, cue: 'Puxe em direção ao rosto, com os cotovelos altos.'},
+    {n: 'Rotação externa com elástico', reps: 12, lado: true, rest: 30, id: 'INKWa8D0Gp4', t: 5, cue: 'Cotovelo colado ao corpo. Movimento lento, para proteger o ombro.'},
+    {n: 'Pallof press', reps: 10, lado: true, rest: 45, id: 'G84ceO6XX9w', t: 0, cue: 'Elástico ou polia na lateral. Estenda os braços sem deixar o tronco girar.'}
+  ]},
+  c: {nome: 'Treino C', dia: 'Sexta', foco: 'Estabilidade e core', ex: [
+    {n: 'Elevação pélvica unilateral', reps: 10, lado: true, rest: 45, id: '4AeXJJRhkMw', t: 14, cue: 'Suba empurrando o calcanhar, com o quadril nivelado.'},
+    {n: 'Step-down', reps: 8, lado: true, rest: 45, id: '66crATZ3SLQ', t: 0, cue: 'Degrau baixo. Desça em 3 segundos, com o joelho alinhado ao pé.'},
+    {n: 'Passada lateral com mini band', reps: 12, lado: true, rest: 30, id: 'g65F7ISjX5I', t: 0, cue: 'Joelhos levemente flexionados, sem deixar a banda afrouxar.'},
+    {n: 'Prancha Copenhagen adaptada', seg: 20, lado: true, rest: 30, id: 'yj7VyP_YOdk', t: 0, cue: 'Versão com apoio da perna de baixo. Foco na parte interna da coxa.'},
+    {n: 'Perdigueiro', reps: 8, lado: true, rest: 30, id: 'CTkmKnC7PDc', t: 0, cue: 'Coluna neutra e mão de apoio empurrando o chão.'},
+    {n: 'Prancha lateral', seg: 30, lado: true, rest: 30, id: '2NjO5KrlVEM', t: 6, cue: 'Cotovelo sob o ombro e quadril alto.'},
+    {n: 'Caminhada do fazendeiro', seg: 40, rest: 60, id: 'ooY6pF0H1BA', t: 0, cue: 'Halteres pesados, tronco ereto e passos curtos.'}
+  ]}
+};
+
+const $ = id => document.getElementById(id);
+const ler = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const hoje = {2: 'a', 3: 'b', 5: 'c'}[new Date().getDay()];
+const inicial = ['a', 'b', 'c'].includes(location.hash.slice(1)) ? location.hash.slice(1) : hoje || 'a';
+
+let sessao = inicial, series = Number(ler('meuz-series', '2'));
+let passos = [], idx = -1, fim = 0, restante = null, ultimoBip = null, audio = null, trava = null, relogio = null;
+
+const dose = e => (e.seg ? e.seg + ' s' : e.reps + ' reps') + (e.lado ? ' por lado' : '');
+const link = e => `https://www.youtube.com/watch?v=${e.id}${e.t ? `&t=${e.t}s` : ''}`;
+const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+// Fora do visualizador de artifacts o YouTube pode ser incorporado, e o vídeo aparece no próprio treino.
+const EMBED = window.self === window.top;
+const video = e => EMBED ? `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?start=${e.t}&autoplay=1&mute=1&playsinline=1&rel=0&loop=1&playlist=${e.id}" title="Demonstração: ${e.n}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>` : '';
+
+function montar() {
+  const s = SESSOES[sessao], lista = [{k: 'warm', dur: 240}];
+  s.ex.forEach((e, i) => {
+    for (let n = 1; n <= series; n++) {
+      if (e.seg && e.lado) {
+        lista.push({k: 'work', e, i, n, lado: 'Lado direito'}, {k: 'rest', dur: 10, e, i, n, troca: true}, {k: 'work', e, i, n, lado: 'Lado esquerdo'});
+      } else {
+        lista.push({k: 'work', e, i, n});
+      }
+      const ultimo = i === s.ex.length - 1 && n === series;
+      if (!ultimo) lista.push({k: 'rest', dur: e.rest, e, i, n, prox: n < series ? e : s.ex[i + 1]});
+    }
+  });
+  lista.push({k: 'done'});
+  return lista;
+}
+
+function minutos(lista) {
+  const seg = lista.reduce((t, p) => {
+    if (p.dur) return t + p.dur;
+    if (p.k !== 'work') return t;
+    return t + (p.e.seg ? p.e.seg + 5 : p.e.lado ? 70 : 40);
+  }, 0);
+  return Math.round(seg / 60);
+}
+
+function bip(freq, dur) {
+  if (!audio) return;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.frequency.value = freq;
+  g.gain.value = .25;
+  o.connect(g).connect(audio.destination);
+  o.start();
+  o.stop(audio.currentTime + dur);
+}
+
+function iniciarRecursos() {
+  try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}
+  if (navigator.wakeLock) navigator.wakeLock.request('screen').then(t => { trava = t; }).catch(() => {});
+}
+
+function cronometrar(seg) {
+  fim = Date.now() + seg * 1000;
+  restante = null;
+  ultimoBip = null;
+  clearInterval(relogio);
+  relogio = setInterval(tique, 200);
+}
+
+function parar() { clearInterval(relogio); relogio = null; fim = 0; restante = null; }
+
+function faltam() { return Math.max(0, Math.ceil((fim - Date.now()) / 1000)); }
+
+function tique() {
+  const f = faltam();
+  const c = document.querySelector('.clock');
+  const p = passos[idx];
+  const dur = p.k === 'work' ? p.e.seg : p.dur;
+  if (c) c.textContent = mmss(Math.min(f, dur));
+  const prep = $('prep');
+  if (prep) prep.hidden = f <= dur;
+  if (f <= 3 && f > 0 && f !== ultimoBip) { ultimoBip = f; bip(660, .12); }
+  if (f === 0) {
+    bip(990, .4);
+    try { navigator.vibrate && navigator.vibrate(400); } catch {}
+    ir(idx + 1);
+  }
+}
+
+function ir(i) {
+  parar();
+  idx = Math.max(0, Math.min(i, passos.length - 1));
+  const p = passos[idx];
+  if (p.k === 'rest') cronometrar(p.dur);
+  desenhar();
+  if (i > 0) $('player').scrollIntoView({block: 'nearest'});
+}
+
+function botoes(principal) {
+  const pausa = relogio || restante !== null;
+  return `<div class="controls">
+    ${principal ? `<button class="main" id="main" type="button">${principal}</button>` : ''}
+    <button id="prev" type="button">Voltar</button>
+    ${pausa ? `<button id="pause" type="button">${restante !== null ? 'Continuar' : 'Pausar'}</button>` : ''}
+    <button id="skip" type="button">Pular</button>
+    <button id="stop" type="button">Encerrar</button>
+  </div>`;
+}
+
+function desenhar() {
+  const s = SESSOES[sessao], pl = $('player');
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === sessao));
+  $('s2').setAttribute('aria-pressed', series === 2);
+  $('s3').setAttribute('aria-pressed', series === 3);
+  const base = passos.length ? passos : montar();
+  $('sum').textContent = `${s.foco}: cerca de ${minutos(base)} min`;
+  $('fila').href = `https://www.youtube.com/watch_videos?video_ids=${s.ex.map(e => e.id).join(',')}`;
+  const atual = passos[idx];
+  const ativo = atual && atual.k !== 'warm' && atual.k !== 'done' ? atual.i : -1;
+  $('list').innerHTML = s.ex.map((e, i) => `<li class="${i === ativo ? 'now' : i < ativo || (atual && atual.k === 'done') ? 'past' : ''}">
+    <span class="n">${i + 1}</span>
+    <div><h3>${e.n}</h3>
+    <p class="dose">${series} × ${dose(e)} · descanso ${e.rest} s</p>
+    <p class="cue">${e.cue}</p>
+    <a href="${link(e)}" target="_blank" rel="noopener">Ver o trecho${e.t ? ` em ${mmss(e.t)}` : ''}</a></div></li>`).join('');
+
+  pl.classList.toggle('rest', !!atual && atual.k === 'rest');
+  if (!atual) {
+    pl.innerHTML = `<span class="tag">${s.nome} · ${s.dia}</span><h2>${s.foco}</h2>
+      <p>Comece com 4 minutos de aquecimento. Depois, o descanso entre as séries roda sozinho e toca um aviso.</p>
+      <div class="controls"><button class="main" id="main" type="button">Começar treino</button></div>`;
+    $('main').onclick = () => { iniciarRecursos(); passos = montar(); ir(0); };
+    return;
+  }
+  if (atual.k === 'warm') {
+    const correndo = relogio || restante !== null;
+    pl.innerHTML = `<span class="tag">Aquecimento</span><div class="clock">${mmss(restante !== null ? restante : correndo ? faltam() : atual.dur)}</div>
+      <p>${AQUECIMENTO}</p>${botoes(correndo ? '' : 'Iniciar aquecimento')}`;
+    if (!correndo) $('main').onclick = () => { cronometrar(atual.dur); desenhar(); };
+  } else if (atual.k === 'work') {
+    const e = atual.e, t = `<span class="tag">Exercício ${atual.i + 1} de ${s.ex.length} · série ${atual.n} de ${series}</span><h2>${e.n}</h2>`;
+    const dica = `${video(e)}<p>${e.cue}</p><p><a href="${link(e)}" target="_blank" rel="noopener">Ver o trecho no YouTube</a></p>`;
+    if (e.seg) {
+      const correndo = relogio || restante !== null;
+      pl.innerHTML = `${t}${atual.lado ? `<p class="reps">${atual.lado}</p>` : ''}<p id="prep" ${correndo ? '' : 'hidden'}>Posicione-se: o tempo começa em 5 segundos.</p>
+        <div class="clock">${mmss(restante !== null ? Math.min(restante, e.seg) : e.seg)}</div>${dica}${botoes(correndo ? '' : 'Começar série')}`;
+      if (!correndo) $('main').onclick = () => { cronometrar(e.seg + 5); desenhar(); };
+    } else {
+      pl.innerHTML = `${t}<p class="reps">${dose(e)}</p>${dica}${botoes('Terminei a série')}`;
+      $('main').onclick = () => ir(idx + 1);
+    }
+  } else if (atual.k === 'rest') {
+    const titulo = atual.troca ? 'Troque de lado' : `Próximo: ${atual.prox.n}`;
+    const prox = atual.troca ? '' : `<p>${atual.prox === atual.e ? `Série ${atual.n + 1} de ${series}` : `Primeira série · ${dose(atual.prox)}`}</p>${atual.prox === atual.e ? '' : video(atual.prox)}`;
+    pl.innerHTML = `<span class="tag">Descanso</span><h2>${titulo}</h2><div class="clock">${mmss(restante !== null ? restante : faltam())}</div>${prox}${botoes('')}`;
+  } else {
+    pl.innerHTML = `<span class="tag">Treino concluído</span><h2>${s.nome} cumprido!</h2>
+      <p>Me conte quanto de carga usou e como ficaram as pernas e os ombros.</p>
+      <div class="controls"><button class="main" id="main" type="button">Voltar ao início</button></div>`;
+    $('main').onclick = encerrar;
+    try { trava && trava.release(); } catch {}
+    return;
+  }
+  $('prev').onclick = () => ir(idx - 1);
+  $('skip').onclick = () => ir(idx + 1);
+  $('stop').onclick = encerrar;
+  const pa = $('pause');
+  if (pa) pa.onclick = () => {
+    if (restante !== null) { const r = restante; cronometrar(r); }
+    else { const r = faltam(); clearInterval(relogio); relogio = null; restante = r; }
+    desenhar();
+  };
+}
+
+function encerrar() { parar(); passos = []; idx = -1; desenhar(); }
+
+$('tabs').innerHTML = Object.entries(SESSOES).map(([k, s]) =>
+  `<button type="button" data-s="${k}"><b>${s.nome}</b><span>${s.dia}</span></button>`).join('');
+$('tabs').onclick = ev => {
+  const b = ev.target.closest('button');
+  if (b) { sessao = b.dataset.s; encerrar(); }
+};
+[2, 3].forEach(n => { $('s' + n).onclick = () => { series = n; guardar('meuz-series', String(n)); encerrar(); }; });
+desenhar();
+</script>
+
+</body></html>

@@ -313,8 +313,8 @@ function iniciar3D() {
     r.shadowMap.enabled = true;
     r.shadowMap.type = T.PCFSoftShadowMap;
     const cena = new T.Scene(), cam = new T.PerspectiveCamera(28, 16 / 9, 10, 1600);
-    cena.add(new T.HemisphereLight(0xffffff, 0x8795a0, .8));
-    const sol = new T.DirectionalLight(0xffffff, .75);
+    cena.add(new T.HemisphereLight(0xffffff, 0x6f7c86, .5));
+    const sol = new T.DirectionalLight(0xffffff, .62);
     sol.position.set(-90, 320, 220);
     sol.castShadow = true;
     sol.shadow.mapSize.set(1024, 1024);
@@ -330,7 +330,7 @@ function iniciar3D() {
     cena.add(grade);
 
     const mat = (c, ru = .52) => new T.MeshStandardMaterial({color: c, roughness: ru, metalness: .04});
-    const pele = mat(0xc8cbce), verm = mat(0xd42f2a), ferro = mat(0x2c3238, .35), movel = mat(0x8a98a1, .7), fita = mat(0xe67e22);
+    const pele = mat(0xb4b8bc), verm = mat(0xc8201c), ferro = mat(0x2c3238, .35), movel = mat(0x8a98a1, .7), fita = mat(0xe67e22);
     const bola = new T.SphereGeometry(1, 26, 18), caixa = new T.BoxGeometry(1, 1, 1), tubo = new T.CylinderGeometry(1, 1, 1, 16);
     const UP = new T.Vector3(0, 1, 0), musc = [];
     const novo = (g, m, pai = cena) => { const o = new T.Mesh(g, m); o.castShadow = true; pai.add(o); return o; };
@@ -421,9 +421,18 @@ function iniciar3D() {
         ultima = a;
         const on = ALVOS[Object.keys(ANIM).find(k => ANIM[k] === a)] || [];
         musc.forEach(([o, k]) => { o.material = on.includes(k) ? verm : pele; });
-        const nome = Object.keys(ANIM).find(k => ANIM[k] === a), yaw = rad(VISTA[nome] ?? (a.frente ? -20 : 28)), z = a.zoom || 1, d = 390 / z;
-        cam.position.set(Math.sin(yaw) * d * .97, 62 / z + d * .2, Math.cos(yaw) * d * .97);
-        cam.lookAt(0, 62 / z, 0);
+        const nome = Object.keys(ANIM).find(k => ANIM[k] === a), yaw = rad(VISTA[nome] ?? (a.frente ? -20 : 28));
+        // Enquadra o movimento inteiro para o boneco ocupar a tela, em pé ou deitado.
+        const pts = a.f.flatMap(([q]) => {
+          const S = [q.h[0] + L.tronco * Math.sin(rad(q.lean)), q.h[1] - L.tronco * Math.cos(rad(q.lean))];
+          return [q.h, q.ff, q.fb, q.hf, q.hb, S, [S[0] + 25 * Math.sin(rad(q.hl ?? q.lean)), S[1] - 25 * Math.cos(rad(q.hl ?? q.lean))]];
+        }).concat([[160, 158]]);
+        if (a.banco) pts.push([a.banco[0], a.banco[1]], [a.banco[0] + a.banco[2], a.banco[1]]);
+        if (a.elastico && a.elastico[1] < 158) pts.push(a.elastico);
+        const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+        const cx = (x0 + x1) / 2 - 160, cy = 158 - (y0 + y1) / 2, d = Math.max((x1 - x0 + 30) / .8865, (y1 - y0 + 34) / .4987);
+        cam.position.set(cx + Math.sin(yaw) * d * .97, cy + d * .2, Math.cos(yaw) * d * .97);
+        cam.lookAt(cx, cy, 0);
         const blocos = [a.banco && [a.banco[0] + a.banco[2] / 2, a.banco[3] / 2 + 158 - a.banco[1] - a.banco[3], a.banco[2], a.banco[3], 46],
           a.parede && [a.parede + 3, 100, 6, 200, 70]].filter(Boolean);
         moveis.forEach((o, i) => {
